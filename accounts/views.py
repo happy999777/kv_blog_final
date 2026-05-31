@@ -31,7 +31,6 @@ class RegisterView(View):
             user = form.save(commit=False)
             user.is_active = True
             user.save()
-            Profile.objects.create(user=user)
             # Send verification email
             self._send_verification_email(request, user)
             messages.success(request, 'Account created! Please check your email to verify your account.')
