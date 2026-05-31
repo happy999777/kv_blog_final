@@ -1,0 +1,1 @@
+# BlogPlatform Django Project

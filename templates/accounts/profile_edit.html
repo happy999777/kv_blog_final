@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile — BlogPlatform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+
+            <div class="d-flex align-items-center gap-3 mb-5" data-aos="fade-down">
+                <img src="{{ user.profile.get_avatar_url }}" alt="{{ user.username }}" class="profile-edit-avatar">
+                <div>
+                    <h2 class="mb-0">Edit Profile</h2>
+                    <p class="text-muted mb-0">@{{ user.username }}</p>
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-4">
+
+                    <!-- Personal Info -->
+                    <div class="col-12" data-aos="fade-up">
+                        <div class="profile-section-card">
+                            <h5 class="profile-section-title">
+                                <i class="fas fa-user me-2"></i>Personal Information
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label-custom">First Name</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}<div class="field-error">{{ form.first_name.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom">Last Name</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}<div class="field-error">{{ form.last_name.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom">Username</label>
+                                    {{ form.username }}
+                                    {% if form.username.errors %}<div class="field-error">{{ form.username.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom">Location</label>
+                                    {{ form.location }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label-custom">Bio</label>
+                                    {{ form.bio }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Picture -->
+                    <div class="col-12" data-aos="fade-up" data-aos-delay="100">
+                        <div class="profile-section-card">
+                            <h5 class="profile-section-title">
+                                <i class="fas fa-camera me-2"></i>Profile Picture
+                            </h5>
+                            <div class="d-flex align-items-center gap-4">
+                                <img src="{{ user.profile.get_avatar_url }}" id="avatarPreview" class="avatar-preview-large" alt="">
+                                <div>
+                                    {{ form.avatar }}
+                                    <small class="text-muted d-block mt-1">JPG, PNG or WEBP. Max 2MB.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Social Links -->
+                    <div class="col-12" data-aos="fade-up" data-aos-delay="150">
+                        <div class="profile-section-card">
+                            <h5 class="profile-section-title">
+                                <i class="fas fa-link me-2"></i>Social Links
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label-custom"><i class="fab fa-twitter me-1" style="color:#1da1f2"></i>Twitter</label>
+                                    {{ form.twitter }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom"><i class="fab fa-linkedin me-1" style="color:#0077b5"></i>LinkedIn</label>
+                                    {{ form.linkedin }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom"><i class="fab fa-github me-1"></i>GitHub</label>
+                                    {{ form.github }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom"><i class="fas fa-globe me-1"></i>Website</label>
+                                    {{ form.website }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="col-12">
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn-primary-custom">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <a href="{% url 'dashboard:home' %}" class="btn-ghost">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.profile-edit-avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border); }
+.profile-section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; }
+.profile-section-title { font-size: 1rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); color: var(--text); }
+.avatar-preview-large { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border); }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelector('[name="avatar"]').addEventListener('change', function () {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = e => document.getElementById('avatarPreview').src = e.target.result;
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

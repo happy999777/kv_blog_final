@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Explore Categories — BlogPlatform{% endblock %}
+
+{% block extra_css %}
+<style>
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+.category-card {
+    background: var(--card-bg, #1a1a2e);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    cursor: pointer;
+    text-decoration: none !important;
+}
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    border-color: var(--theme-color-opacity, rgba(255, 255, 255, 0.15));
+}
+.category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--cat-color, #6c63ff);
+    border-radius: 4px 0 0 4px;
+}
+.category-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    background: var(--cat-color-light, rgba(108, 99, 255, 0.1));
+    color: var(--cat-color, #6c63ff);
+    transition: all 0.3s ease;
+}
+.category-card:hover .category-icon-wrapper {
+    transform: scale(1.1) rotate(5deg);
+}
+.category-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color, #ffffff);
+    margin-bottom: 0.75rem;
+}
+.category-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted, #a0aec0);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+.category-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+}
+.category-count {
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--tag-bg, rgba(255, 255, 255, 0.05));
+    padding: 0.25rem 0.75rem;
+    border-radius: 30px;
+    color: var(--text-color, #ffffff);
+}
+.category-arrow {
+    color: var(--cat-color, #6c63ff);
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+.category-card:hover .category-arrow {
+    transform: translateX(5px);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-bg">
+        <div class="page-header-glow"></div>
+    </div>
+    <div class="container-xl">
+        <div data-aos="fade-up">
+            <h1 class="page-header-title">Browse by Category</h1>
+            <p class="page-header-sub">Explore specialized articles curated across various engineering, design, and developer fields.</p>
+        </div>
+    </div>
+</div>
+
+<div class="container-xl py-5">
+    <div class="row g-4">
+        <!-- Main categories layout -->
+        <div class="col-lg-12">
+            {% if categories_all %}
+            <div class="categories-grid">
+                {% for cat in categories_all %}
+                <a href="{{ cat.get_absolute_url }}" class="category-card" 
+                   style="--cat-color: {{ cat.color }}; --cat-color-light: {{ cat.color }}15; --theme-color-opacity: {{ cat.color }}33;"
+                   data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}50">
+                    <div class="category-icon-wrapper">
+                        <i class="fas {{ cat.icon|default:'fa-folder' }}"></i>
+                    </div>
+                    <h3 class="category-title">{{ cat.name }}</h3>
+                    <p class="category-desc">
+                        {{ cat.description|default:"Discover insights, tutorials, and discussions curated around this topic."|truncatechars:120 }}
+                    </p>
+                    <div class="category-footer">
+                        <span class="category-count">{{ cat.blog_count }} Articles</span>
+                        <span class="category-arrow"><i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-results" data-aos="fade-up">
+                <div class="empty-results-icon"><i class="fas fa-folder-open"></i></div>
+                <h3>No Categories Found</h3>
+                <p>We are currently updating our categories. Check back soon!</p>
+                <a href="{% url 'blogs:list' %}" class="btn-primary-custom mt-3">Back to Blog</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

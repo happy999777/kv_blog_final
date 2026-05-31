@@ -1,0 +1,64 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+{% block title %}Settings — KV Blog{% endblock %}
+{% block topbar_title %}Settings{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-page-title">Account Settings</div>
+<p class="dashboard-page-subtitle">Update your profile and account preferences.</p>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="blog-form-card">
+      <h3 class="form-section-title">Profile Information</h3>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3 text-center">
+          <img src="{{ request.user.profile.get_avatar_url }}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--orange);margin-bottom:10px;display:block;margin-left:auto;margin-right:auto" alt="">
+          <label for="avatar" class="btn-outline-orange" style="cursor:pointer;padding:6px 16px;font-size:.82rem">Change Photo</label>
+          <input type="file" name="avatar" id="avatar" accept="image/*" style="display:none">
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">First Name</label>
+            <input type="text" name="first_name" class="form-control" value="{{ request.user.first_name }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Last Name</label>
+            <input type="text" name="last_name" class="form-control" value="{{ request.user.last_name }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ request.user.email }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Title / Role</label>
+            <input type="text" name="title" class="form-control" value="{{ request.user.profile.title|default:'' }}" placeholder="e.g. Senior Writer, Tech Enthusiast">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Bio</label>
+            <textarea name="bio" class="form-control" rows="4" placeholder="Tell the world about yourself...">{{ request.user.profile.bio|default:'' }}</textarea>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn-primary-custom"><i class="fas fa-save me-2"></i>Save Changes</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="sidebar-widget">
+      <h3 class="widget-title"><i class="fas fa-shield-alt"></i> Account Security</h3>
+      <a href="{% url 'accounts:password_reset' %}" class="btn-secondary-custom w-100 justify-content-center mt-2" style="padding:9px">
+        <i class="fas fa-key me-2"></i>Change Password
+      </a>
+    </div>
+    <div class="sidebar-widget">
+      <h3 class="widget-title"><i class="fas fa-share-alt"></i> Social Links</h3>
+      <div class="mb-2"><input type="text" class="form-control" placeholder="Twitter URL" style="font-size:.85rem"></div>
+      <div class="mb-2"><input type="text" class="form-control" placeholder="LinkedIn URL" style="font-size:.85rem"></div>
+      <div class="mb-2"><input type="text" class="form-control" placeholder="GitHub URL" style="font-size:.85rem"></div>
+      <div class="mb-2"><input type="text" class="form-control" placeholder="Website URL" style="font-size:.85rem"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

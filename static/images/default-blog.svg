@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#6c63ff" />
+      <stop offset="100%" stop-color="#a78bfa" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <g fill="#ffffff" opacity="0.85">
+    <rect x="120" y="120" width="960" height="390" rx="32" ry="32" />
+    <rect x="180" y="190" width="640" height="62" rx="12" ry="12" />
+    <rect x="180" y="280" width="920" height="34" rx="10" ry="10" />
+    <rect x="180" y="336" width="720" height="34" rx="10" ry="10" />
+    <rect x="180" y="392" width="580" height="34" rx="10" ry="10" />
+    <circle cx="910" cy="210" r="72" fill="#ffffff" opacity="0.14" />
+    <circle cx="860" cy="320" r="52" fill="#ffffff" opacity="0.14" />
+  </g>
+  <path d="M220 460 H980" stroke="#ffffff" stroke-width="16" stroke-linecap="round" opacity="0.55"/>
+  <text x="180" y="120" fill="#ffffff" font-family="Inter, sans-serif" font-size="48" font-weight="700">Blog image placeholder</text>
+  <text x="180" y="520" fill="#ffffff" font-family="Inter, sans-serif" font-size="28" opacity="0.85">Default featured image for sample blogs</text>
+</svg>

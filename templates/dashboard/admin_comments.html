@@ -1,0 +1,40 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load humanize %}
+{% block title %}Manage Comments — KV Blog{% endblock %}
+{% block topbar_title %}Comments{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-page-title">Manage Comments</div>
+<p class="dashboard-page-subtitle">Review and moderate user comments.</p>
+<div class="dashboard-table">
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Comment</th><th>Author</th><th>Post</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for comment in comments %}
+        <tr>
+          <td style="max-width:300px">
+            <p style="font-size:.875rem;color:var(--text-secondary);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ comment.content|truncatechars:80 }}</p>
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <img src="{{ comment.author.profile.get_avatar_url }}" style="width:28px;height:28px;border-radius:50%;object-fit:cover" alt="">
+              <span style="font-size:.875rem">{{ comment.author.get_full_name|truncatechars:18 }}</span>
+            </div>
+          </td>
+          <td><a href="{{ comment.blog.get_absolute_url }}" class="text-orange text-decoration-none" style="font-size:.82rem">{{ comment.blog.title|truncatechars:35 }}</a></td>
+          <td style="font-size:.82rem;color:var(--text-muted)">{{ comment.created_at|timesince }} ago</td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{{ comment.blog.get_absolute_url }}" class="action-btn action-btn-view" title="View"><i class="fas fa-eye"></i></a>
+              <button class="action-btn action-btn-delete" data-action="delete" data-id="{{ comment.id }}" data-type="comment" title="Delete"><i class="fas fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center py-5 text-muted">No comments yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

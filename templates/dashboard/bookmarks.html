@@ -1,0 +1,40 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load humanize %}
+{% block title %}Bookmarks — KV Blog{% endblock %}
+{% block topbar_title %}Bookmarks{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-page-title">Saved Articles</div>
+<p class="dashboard-page-subtitle">Articles you've bookmarked for later reading.</p>
+<div class="row g-4">
+  {% for bm in bookmarks %}
+  <div class="col-md-6 col-xl-4">
+    <a href="{{ bm.blog.get_absolute_url }}" class="blog-card">
+      <div class="blog-card-img">
+        <img src="{{ bm.blog.get_featured_image_url }}" alt="{{ bm.blog.title }}" loading="lazy">
+        <div class="blog-card-overlay"></div>
+        <span class="blog-card-category">{{ bm.blog.category.name|default:"Post" }}</span>
+        <span class="blog-card-read-time"><i class="fas fa-clock me-1"></i>{{ bm.blog.read_time }}</span>
+      </div>
+      <div class="blog-card-body">
+        <span class="blog-card-title">{{ bm.blog.title|truncatechars:65 }}</span>
+        <p class="blog-card-excerpt">{{ bm.blog.excerpt|default:bm.blog.content|striptags|truncatechars:100 }}</p>
+        <div class="blog-card-footer">
+          <div class="blog-card-author">
+            <img src="{{ bm.blog.author.profile.get_avatar_url }}" alt="">
+            <span class="blog-card-author-name">{{ bm.blog.author.get_full_name|truncatechars:18 }}</span>
+          </div>
+          <span class="blog-card-date">{{ bm.created_at|date:"M d" }}</span>
+        </div>
+      </div>
+    </a>
+  </div>
+  {% empty %}
+  <div class="col-12 text-center py-5">
+    <i class="far fa-bookmark" style="font-size:3rem;color:var(--gray-300);display:block;margin-bottom:16px"></i>
+    <h4>No bookmarks yet</h4>
+    <p class="text-muted mb-4">Save articles to read later by clicking the bookmark icon.</p>
+    <a href="{% url 'blogs:list' %}" class="btn-primary-custom">Browse Articles</a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

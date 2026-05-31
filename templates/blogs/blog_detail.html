@@ -1,0 +1,404 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ blog.get_meta_title }} — BlogPlatform{% endblock %}
+{% block meta_description %}{{ blog.get_meta_description }}{% endblock %}
+{% block og_title %}{{ blog.title }}{% endblock %}
+{% block og_description %}{{ blog.excerpt }}{% endblock %}
+{% block og_image %}{{ blog.get_featured_image_url }}{% endblock %}
+
+{% block content %}
+
+<!-- Blog Hero -->
+<div class="blog-detail-hero">
+    <div class="blog-hero-bg">
+        <img src="{{ blog.get_featured_image_url }}" alt="{{ blog.title }}" class="blog-hero-img-bg">
+        <div class="blog-hero-overlay"></div>
+    </div>
+    <div class="container-xl">
+        <div class="blog-hero-content" data-aos="fade-up">
+            <div class="blog-detail-meta">
+                {% if blog.category %}
+                <a href="{{ blog.category.get_absolute_url }}" class="detail-cat" style="background: {{ blog.category.color }}">
+                    {{ blog.category.name }}
+                </a>
+                {% endif %}
+                {% for tag in blog.tags.all %}
+                <a href="{{ tag.get_absolute_url }}" class="detail-tag">#{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+            <h1 class="blog-detail-title">{{ blog.title }}</h1>
+            <p class="blog-detail-excerpt">{{ blog.excerpt }}</p>
+            <div class="blog-detail-author-row">
+                <img src="{{ blog.author.profile.get_avatar_url }}" class="detail-avatar" alt="{{ blog.author.get_full_name }}">
+                <div class="detail-author-info">
+                    <a href="{{ blog.author.get_absolute_url }}" class="detail-author-name">{{ blog.author.get_full_name }}</a>
+                    <div class="detail-meta-info">
+                        <span><i class="fas fa-calendar me-1"></i>{{ blog.published_at|date:"F j, Y" }}</span>
+                        <span><i class="fas fa-clock me-1"></i>{{ blog.read_time }}</span>
+                        <span><i class="fas fa-eye me-1"></i>{{ blog.views_count|intcomma }} views</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Area -->
+<div class="container-xl">
+    <div class="row blog-detail-layout">
+
+        <!-- Main Content -->
+        <div class="col-lg-8">
+
+            <!-- Blog Content -->
+            <article class="blog-article" data-aos="fade-up">
+                <div class="blog-content">
+                    {{ blog.content|safe }}
+                </div>
+
+                <!-- Tags -->
+                {% if blog.tags.all %}
+                <div class="blog-tags-section">
+                    <strong>Tags:</strong>
+                    {% for tag in blog.tags.all %}
+                    <a href="{{ tag.get_absolute_url }}" class="tag-pill">{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Actions Bar -->
+                <div class="blog-actions-bar">
+                    <div class="action-left">
+                        <button class="action-btn like-btn {% if is_liked %}liked{% endif %}" 
+                                id="likeBtn" data-slug="{{ blog.slug }}">
+                            <i class="fas fa-heart"></i>
+                            <span id="likeCount">{{ blog.likes_count }}</span>
+                        </button>
+                        <button class="action-btn bookmark-action-btn {% if is_bookmarked %}bookmarked{% endif %}"
+                                id="bookmarkBtn" data-slug="{{ blog.slug }}">
+                            <i class="fas fa-bookmark"></i>
+                            <span>{{ is_bookmarked|yesno:"Saved,Save" }}</span>
+                        </button>
+                    </div>
+                    <div class="action-right">
+                        <span class="share-label">Share:</span>
+                        <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ blog.title }}" 
+                           target="_blank" class="share-btn twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri }}"
+                           target="_blank" class="share-btn linkedin"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
+                           target="_blank" class="share-btn facebook"><i class="fab fa-facebook"></i></a>
+                        <button class="share-btn copy" id="copyLink" title="Copy link">
+                            <i class="fas fa-link"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Author Bio -->
+            <div class="author-bio-card" data-aos="fade-up">
+                <img src="{{ blog.author.profile.get_avatar_url }}" alt="{{ blog.author.get_full_name }}" class="author-bio-avatar">
+                <div class="author-bio-content">
+                    <h4><a href="{{ blog.author.get_absolute_url }}">{{ blog.author.get_full_name }}</a></h4>
+                    <p>{{ blog.author.profile.bio|default:"A passionate writer and content creator." }}</p>
+                    <div class="author-bio-social">
+                        {% if blog.author.profile.twitter %}
+                        <a href="{{ blog.author.profile.twitter }}" target="_blank"><i class="fab fa-twitter"></i></a>
+                        {% endif %}
+                        {% if blog.author.profile.linkedin %}
+                        <a href="{{ blog.author.profile.linkedin }}" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        {% endif %}
+                        {% if blog.author.profile.github %}
+                        <a href="{{ blog.author.profile.github }}" target="_blank"><i class="fab fa-github"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            {% if blog.allow_comments %}
+            <div class="comments-section" data-aos="fade-up" id="comments">
+                <h3 class="comments-title">
+                    <i class="fas fa-comments me-2"></i>{{ comment_count }} Comments
+                </h3>
+
+                <!-- Comment Form -->
+                {% if user.is_authenticated %}
+                <div class="comment-form-card">
+                    <div class="comment-form-header">
+                        <img src="{{ user.profile.get_avatar_url }}" alt="{{ user.username }}" class="comment-form-avatar">
+                        <span>{{ user.get_full_name }}</span>
+                    </div>
+                    <form method="post" action="{% url 'comments:add' blog.slug %}" id="commentForm" data-ajax="true">
+                        {% csrf_token %}
+                        <input type="hidden" name="parent_id" id="parentId" value="">
+                        <div id="replyIndicator" class="reply-indicator d-none">
+                            Replying to <strong id="replyToName"></strong>
+                            <button type="button" id="cancelReply" class="cancel-reply">Cancel</button>
+                        </div>
+                        <textarea name="content" id="commentContent" class="comment-textarea" 
+                                  placeholder="Share your thoughts..." rows="4" required></textarea>
+                        <div class="comment-form-footer">
+                            <button type="submit" class="btn-primary-custom">
+                                <i class="fas fa-paper-plane me-2"></i>Post Comment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% else %}
+                <div class="login-to-comment">
+                    <i class="fas fa-lock me-2"></i>
+                    <a href="{% url 'accounts:login' %}?next={{ request.path }}">Log in</a> to leave a comment
+                </div>
+                {% endif %}
+
+                <!-- Comments List -->
+                <div class="comments-list">
+                    {% for comment in comments %}
+                    <div class="comment-item" id="comment-{{ comment.id }}">
+                        <img src="{{ comment.author.profile.get_avatar_url }}" class="comment-avatar" alt="">
+                        <div class="comment-body">
+                            <div class="comment-header">
+                                <strong>{{ comment.author.get_full_name }}</strong>
+                                <span class="comment-time">{{ comment.created_at|timesince }} ago</span>
+                            </div>
+                            <p class="comment-text">{{ comment.content }}</p>
+                            <div class="comment-actions">
+                                <button class="comment-action-btn like-comment" data-id="{{ comment.id }}">
+                                    <i class="fas fa-thumbs-up"></i> {{ comment.likes_count }}
+                                </button>
+                                {% if user.is_authenticated %}
+                                <button class="comment-action-btn reply-btn" 
+                                        data-id="{{ comment.id }}" data-name="{{ comment.author.get_full_name }}">
+                                    <i class="fas fa-reply"></i> Reply
+                                </button>
+                                {% endif %}
+                            </div>
+                            <!-- Replies -->
+                            {% if comment.replies.all %}
+                            <div class="comment-replies">
+                                {% for reply in comment.replies.all %}
+                                {% if reply.is_approved %}
+                                <div class="comment-item reply">
+                                    <img src="{{ reply.author.profile.get_avatar_url }}" class="comment-avatar small" alt="">
+                                    <div class="comment-body">
+                                        <div class="comment-header">
+                                            <strong>{{ reply.author.get_full_name }}</strong>
+                                            <span class="comment-time">{{ reply.created_at|timesince }} ago</span>
+                                        </div>
+                                        <p class="comment-text">{{ reply.content }}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="no-comments">
+                        <i class="fas fa-comment-slash"></i>
+                        <p>No comments yet. Be the first to share your thoughts!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="col-lg-4">
+            <div class="sidebar sticky-sidebar">
+
+                <!-- Reading Progress -->
+                <div class="reading-progress-widget">
+                    <div class="progress-ring">
+                        <svg viewBox="0 0 36 36">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                                  fill="none" stroke="#333" stroke-width="2.5"/>
+                            <path id="progressRingFill" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                                  fill="none" stroke="#6c63ff" stroke-width="2.5" stroke-dasharray="0, 100"/>
+                        </svg>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div>
+                        <p class="mb-0">Reading Progress</p>
+                        <small>{{ blog.read_time }}</small>
+                    </div>
+                </div>
+
+                <!-- Related Blogs -->
+                {% if related_blogs %}
+                <div class="sidebar-widget">
+                    <h4 class="widget-title">Related Articles</h4>
+                    {% for rb in related_blogs %}
+                    <article class="sidebar-blog-item">
+                        <div class="sidebar-blog-img">
+                            <img src="{{ rb.get_featured_image_url }}" alt="{{ rb.title }}">
+                        </div>
+                        <div class="sidebar-blog-content">
+                            <h6><a href="{{ rb.get_absolute_url }}">{{ rb.title|truncatechars:60 }}</a></h6>
+                            <small>{{ rb.read_time }} · {{ rb.views_count }} views</small>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Tags -->
+                <div class="sidebar-widget">
+                    <h4 class="widget-title">Tags</h4>
+                    <div class="sidebar-tags">
+                        {% for tag in blog.tags.all %}
+                        <a href="{{ tag.get_absolute_url }}" class="tag-pill">{{ tag.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Comment form AJAX submission
+$('#commentForm').on('submit', function(e) {
+    e.preventDefault();
+    const $form = $(this);
+    const $btn = $form.find('button[type="submit"]');
+    const $textarea = $('#commentContent');
+    const content = $textarea.val().trim();
+    
+    if (!content) {
+        showToast('Please enter a comment.', 'warning');
+        $textarea.focus();
+        return;
+    }
+    
+    $btn.prop('disabled', true).html('<span class="spinner"></span> Posting...');
+    
+    $.ajax({
+        url: $form.attr('action'),
+        method: 'POST',
+        data: $form.serialize(),
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        dataType: 'json'
+    })
+        .done(function(data) {
+            if (data.success) {
+                // Append new comment to list
+                const commentHtml = `
+                    <div class="comment-item" id="comment-${data.comment.id}">
+                        <img src="${data.comment.avatar}" class="comment-avatar" alt="">
+                        <div class="comment-body">
+                            <div class="comment-header">
+                                <strong>${data.comment.author}</strong>
+                                <span class="comment-time">Just now</span>
+                            </div>
+                            <p class="comment-text">${data.comment.content}</p>
+                            <div class="comment-actions">
+                                <button class="comment-action-btn like-comment" data-id="${data.comment.id}">
+                                    <i class="fas fa-thumbs-up"></i> 0
+                                </button>
+                                <button class="comment-action-btn reply-btn" data-id="${data.comment.id}" data-name="${data.comment.author}">
+                                    <i class="fas fa-reply"></i> Reply
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('.no-comments').remove();
+                $('.comments-list').prepend(commentHtml);
+                $textarea.val('');
+                $('#parentId').val('');
+                $('#replyIndicator').addClass('d-none');
+                showToast('Comment posted successfully!', 'success');
+                
+                // Update comment count
+                const $title = $('.comments-title');
+                const match = $title.text().match(/\d+/);
+                if (match) {
+                    const newCount = parseInt(match[0]) + 1;
+                    $title.html(`<i class="fas fa-comments me-2"></i>${newCount} Comments`);
+                }
+            } else {
+                showToast(data.error || 'Failed to post comment.', 'error');
+            }
+        })
+        .fail(function(xhr) {
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                showToast(xhr.responseJSON.error, 'error');
+            } else {
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        })
+        .always(function() {
+            $btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i>Post Comment');
+        });
+});
+
+// Like functionality
+$('#likeBtn').on('click', function() {
+    const btn = $(this);
+    const slug = btn.data('slug');
+    $.post(`/blogs/${slug}/like/`, {csrfmiddlewaretoken: '{{ csrf_token }}'})
+        .done(data => {
+            btn.toggleClass('liked', data.liked);
+            $('#likeCount').text(data.count);
+        })
+        .fail(() => {
+            window.location.href = '{% url "accounts:login" %}?next={{ request.path }}';
+        });
+});
+
+// Bookmark
+$('#bookmarkBtn').on('click', function() {
+    const btn = $(this);
+    const slug = btn.data('slug');
+    $.post(`/blogs/${slug}/bookmark/`, {csrfmiddlewaretoken: '{{ csrf_token }}'})
+        .done(data => {
+            btn.toggleClass('bookmarked', data.bookmarked);
+            btn.find('span').text(data.bookmarked ? 'Saved' : 'Save');
+        });
+});
+
+// Reply system
+$('.reply-btn').on('click', function() {
+    const id = $(this).data('id');
+    const name = $(this).data('name');
+    $('#parentId').val(id);
+    $('#replyToName').text(name);
+    $('#replyIndicator').removeClass('d-none');
+    $('#commentContent').focus();
+    $('html, body').animate({scrollTop: $('#commentForm').offset().top - 100}, 500);
+});
+$('#cancelReply').on('click', function() {
+    $('#parentId').val('');
+    $('#replyIndicator').addClass('d-none');
+});
+
+// Copy link
+$('#copyLink').on('click', function() {
+    navigator.clipboard.writeText(window.location.href);
+    showToast('Link copied!', 'success');
+});
+
+// Reading progress
+$(window).on('scroll', function() {
+    const article = $('.blog-article');
+    if (!article.length) return;
+    const total = article.height();
+    const scrolled = $(window).scrollTop() - article.offset().top;
+    const pct = Math.max(0, Math.min(100, Math.round((scrolled / total) * 100)));
+    $('#progressPercent').text(pct + '%');
+    const dashArray = `${pct}, 100`;
+    $('#progressRingFill').attr('stroke-dasharray', dashArray);
+});
+</script>
+{% endblock %}

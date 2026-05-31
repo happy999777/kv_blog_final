@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Privacy Policy — KV Blog{% endblock %}
+{% block content %}
+<div class="page-hero"><div class="container-xl"><span class="section-eyebrow">Legal</span><h1 class="page-hero-title">Privacy <span>Policy</span></h1></div></div>
+<div class="container-xl py-5"><div class="row justify-content-center"><div class="col-lg-8">
+<div class="post-content">
+<p>Last updated: {% now "F d, Y" %}</p>
+<h2>Information We Collect</h2>
+<p>We collect information you provide when registering, writing posts, or contacting us — including your name, email, and content you create.</p>
+<h2>How We Use Your Information</h2>
+<p>Your data is used to provide and improve the KV Blog service, send notifications, and personalize your experience. We never sell your personal data to third parties.</p>
+<h2>Cookies</h2>
+<p>We use essential cookies for authentication and session management. You can disable non-essential cookies in your browser settings.</p>
+<h2>Data Security</h2>
+<p>We implement industry-standard security measures to protect your information. All passwords are hashed and sensitive data is encrypted.</p>
+<h2>Contact</h2>
+<p>Questions? Contact us at <a href="{% url 'contact:contact' %}">our contact page</a>.</p>
+</div>
+</div></div></div>
+{% endblock %}

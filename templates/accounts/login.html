@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Login — KV Blog{% endblock %}
+{% block content %}
+<section class="auth-section">
+  <div class="container">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <span class="kv-logo" style="font-size:2.5rem">KV</span>
+      </div>
+      <h1 class="auth-title">Welcome Back!</h1>
+      <p class="auth-subtitle">Sign in to continue your writing journey</p>
+
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger rounded-3 mb-3" style="font-size:.875rem">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="mb-3">
+          <label class="form-label">Email or Username</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" name="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+              placeholder="Enter your email or username" value="{{ form.email.value|default:'' }}" required autofocus>
+          </div>
+          {% if form.email.errors %}<div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label mb-0">Password</label>
+            <a href="{% url 'accounts:password_reset' %}" class="auth-link" style="font-size:.82rem">Forgot password?</a>
+          </div>
+          <div class="input-icon-wrap" style="position:relative">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" name="password" id="loginPassword" class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+              placeholder="Enter your password" required style="padding-right:42px">
+            <button type="button" class="password-toggle"><i class="fas fa-eye"></i></button>
+          </div>
+          {% if form.password.errors %}<div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="form-check mb-4">
+          <input class="form-check-input" type="checkbox" name="remember_me" id="rememberMe">
+          <label class="form-check-label" for="rememberMe" style="font-size:.875rem;color:var(--text-secondary)">Keep me signed in</label>
+        </div>
+        <button type="submit" class="btn-primary-custom w-100 justify-content-center" style="font-size:.95rem;padding:13px">
+          <i class="fas fa-sign-in-alt me-2"></i>Sign In
+        </button>
+      </form>
+
+      <div class="auth-divider">or</div>
+      <p class="text-center" style="font-size:.875rem;color:var(--text-secondary)">
+        Don't have an account? <a href="{% url 'accounts:register' %}" class="auth-link">Create one free</a>
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

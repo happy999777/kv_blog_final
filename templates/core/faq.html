@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQ — BlogPlatform{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-bg"><div class="page-header-glow"></div></div>
+    <div class="container-xl">
+        <div data-aos="fade-up">
+            <h1 class="page-header-title">Frequently Asked Questions</h1>
+            <p class="page-header-sub">Find answers to the most common questions.</p>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="faq-list" data-aos="fade-up">
+
+                <div class="faq-item">
+                    <button class="faq-question" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        How do I submit a blog post?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </button>
+                    <div class="collapse faq-answer" id="faq1">
+                        <p>Register an account, log in, then click "Write Blog" in the navigation or your dashboard. Fill in the title, content, category, and tags, then click "Submit for Review".</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        How long does the approval process take?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </button>
+                    <div class="collapse faq-answer" id="faq2">
+                        <p>Our editorial team typically reviews submissions within 24-48 hours. You'll receive an email notification and an in-app notification once your post is approved or if it needs revisions.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        What happens if my post is rejected?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </button>
+                    <div class="collapse faq-answer" id="faq3">
+                        <p>You'll receive a notification with a reason for rejection. You can then edit your post to address the feedback and re-submit it for review. Most rejections are due to formatting, clarity, or factual accuracy.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" data-bs-toggle="collapse" data-bs-target="#faq4">
+                        Can I edit a post after it's been published?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </button>
+                    <div class="collapse faq-answer" id="faq4">
+                        <p>Yes! Go to your Dashboard → My Blogs and click the edit icon next to your published post. Major edits may require re-approval by the moderation team.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" data-bs-toggle="collapse" data-bs-target="#faq5">
+                        Is BlogPlatform free to use?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </button>
+                    <div class="collapse faq-answer" id="faq5">
+                        <p>Yes, BlogPlatform is completely free for readers and authors. You can read, write, comment, like, and bookmark articles without any charges.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" data-bs-toggle="collapse" data-bs-target="#faq6">
+                        How do I become a Moderator or Author role?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </button>
+                    <div class="collapse faq-answer" id="faq6">
+                        <p>Role upgrades are handled by administrators. If you're a consistent contributor with quality content, reach out through the Contact page and we'll review your profile.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.faq-list { display: flex; flex-direction: column; gap: 1rem; }
+.faq-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.faq-question { width: 100%; background: none; border: none; padding: 1.25rem 1.5rem; color: var(--text); font-family: var(--font-display); font-weight: 600; font-size: 1rem; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: var(--transition); }
+.faq-question:hover { color: var(--primary); }
+.faq-icon { color: var(--text-muted); transition: transform 0.2s; }
+[aria-expanded="true"] .faq-icon { transform: rotate(45deg); color: var(--primary); }
+.faq-answer { padding: 0 1.5rem 1.25rem; border-top: 1px solid var(--border); }
+.faq-answer p { color: var(--text-muted); margin: 1rem 0 0; font-size: 0.9rem; }
+</style>
+{% endblock %}

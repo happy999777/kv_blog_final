@@ -1,0 +1,592 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} — BlogPlatform{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/42.0.0/ckeditor5.css">
+<style>
+/* Blog Form Premium Styles */
+.blog-form-page {
+    background: var(--bg);
+    min-height: 100vh;
+}
+.blog-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.blog-form-header h1 {
+    font-size: 1.875rem;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.25rem;
+}
+.blog-form-header p {
+    color: var(--text-muted);
+    margin: 0;
+}
+.form-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+}
+.form-section:hover {
+    border-color: var(--border-light);
+    box-shadow: var(--shadow-card);
+}
+.form-label-custom {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+.form-label-custom .required {
+    color: var(--danger);
+    margin-left: 0.25rem;
+}
+.form-help {
+    font-size: 0.775rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+.char-counter {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-align: right;
+    margin-top: 0.3rem;
+}
+.section-toggle-header {
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 0.5rem 0;
+}
+.section-toggle-header h5 {
+    font-size: 0.95rem;
+    margin: 0;
+    color: var(--text);
+}
+.toggle-icon {
+    color: var(--text-dim);
+    transition: transform 0.2s;
+}
+.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+.seo-fields {
+    margin-top: 1.25rem;
+}
+.editor-wrapper {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-2);
+}
+.publish-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+}
+.sticky-publish {
+    position: sticky;
+    top: 90px;
+}
+.publish-title {
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+.publish-info {
+    margin-bottom: 1.25rem;
+}
+.publish-info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    padding: 0.4rem 0;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+}
+.publish-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+}
+.sidebar-form-widget {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    transition: var(--transition);
+}
+.sidebar-form-widget:hover {
+    border-color: var(--border-light);
+}
+.widget-title-form {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+.image-upload-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.image-upload-area:hover {
+    border-color: var(--primary);
+}
+.image-placeholder {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+.image-placeholder i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    color: var(--primary);
+}
+.image-placeholder p {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+.image-placeholder small {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+#previewImg {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+.tags-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
+.tag-pill-sm {
+    background: rgba(108,99,255,0.1);
+    color: var(--primary);
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    font-size: 0.72rem;
+}
+.field-error {
+    color: var(--danger);
+    font-size: 0.75rem;
+    margin-top: 0.4rem;
+}
+.form-control:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.1);
+    background: var(--bg-card);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="blog-form-page">
+    <div class="container-xl py-5">
+
+        <!-- Header -->
+        <div class="blog-form-header mb-5" data-aos="fade-down">
+            <div>
+                <h1>{{ title }}</h1>
+                <p class="text-muted">Craft your story and submit for review.</p>
+            </div>
+            <a href="{% url 'dashboard:my_blogs' %}" class="btn-ghost">
+                <i class="fas fa-arrow-left me-2"></i>Back to Blogs
+            </a>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="blogForm">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger mb-4" style="background:rgba(220,53,69,0.1);border:1px solid var(--danger);border-radius:var(--radius);color:var(--danger);">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ form.non_field_errors.0 }}
+            </div>
+            {% endif %}
+            <div class="row g-4">
+
+                <!-- Main Form -->
+                <div class="col-lg-8">
+
+                    <!-- Title -->
+                    <div class="form-section" data-aos="fade-up">
+                        <label class="form-label-custom">Blog Title <span class="required">*</span></label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                        <div class="field-error">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                        <div class="char-counter" id="titleCounter">0/300</div>
+                    </div>
+
+                    <!-- Excerpt -->
+                    <div class="form-section" data-aos="fade-up" data-aos-delay="50">
+                        <label class="form-label-custom">Excerpt <span class="required">*</span></label>
+                        <p class="form-help">A brief summary shown in blog listings (auto-generated if left empty)</p>
+                        {{ form.excerpt }}
+                        {% if form.excerpt.errors %}
+                        <div class="field-error">{{ form.excerpt.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Content Editor -->
+                    <div class="form-section" data-aos="fade-up" data-aos-delay="100">
+                        <label class="form-label-custom">Content <span class="required">*</span></label>
+                        <div class="editor-wrapper">
+                            <div id="blogEditor">{% if blog %}{{ blog.content|safe }}{% elif form.content.value %}{{ form.content.value|safe }}{% endif %}</div>
+                        </div>
+                        <textarea name="content" id="contentHidden" class="form-control mt-2" rows="12" placeholder="Write your blog content here... (HTML supported)">{% if blog %}{{ blog.content }}{% elif form.content.value %}{{ form.content.value }}{% endif %}</textarea>
+                        {% if form.content.errors %}
+                        <div class="field-error">{{ form.content.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- SEO Section -->
+                    <div class="form-section" data-aos="fade-up">
+                        <div class="section-toggle-header" data-bs-toggle="collapse" data-bs-target="#seoSection">
+                            <h5><i class="fas fa-search-plus me-2"></i>SEO Settings</h5>
+                            <i class="fas fa-chevron-down toggle-icon"></i>
+                        </div>
+                        <div class="collapse" id="seoSection">
+                            <div class="seo-fields">
+                                <div class="mb-3">
+                                    <label class="form-label-custom">Meta Title</label>
+                                    {{ form.meta_title }}
+                                    <div class="char-counter" id="metaTitleCounter">0/70</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label-custom">Meta Description</label>
+                                    {{ form.meta_description }}
+                                    <div class="char-counter" id="metaDescCounter">0/160</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Sidebar Settings -->
+                <div class="col-lg-4">
+
+                    <!-- Publish Actions -->
+                    <div class="publish-box sticky-publish" data-aos="fade-left">
+                        <h5 class="publish-title"><i class="fas fa-paper-plane me-2"></i>Publish</h5>
+                        <div class="publish-info">
+                            <div class="publish-info-row">
+                                <span><i class="fas fa-shield-alt me-2"></i>Status</span>
+                                <span class="text-warning">Pending Review</span>
+                            </div>
+                            <div class="publish-info-row">
+                                <span><i class="fas fa-eye me-2"></i>Visibility</span>
+                                <span>Public (after approval)</span>
+                            </div>
+                        </div>
+                        <div class="publish-actions">
+                            <button type="submit" name="action" value="draft" class="btn-ghost w-100 mb-2">
+                                <i class="fas fa-save me-2"></i>Save as Draft
+                            </button>
+                            <button type="submit" name="action" value="pending_review" class="btn-primary-custom w-100 mb-2">
+                                <i class="fas fa-paper-plane me-2"></i>Submit for Review
+                            </button>
+                            {% if request.user.is_superuser or request.user.role == 'admin' %}
+                            <button type="submit" name="action" value="published" class="btn-success w-100">
+                                <i class="fas fa-check-circle me-2"></i>Publish Directly
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+<!-- Featured Image -->
+                     <div class="sidebar-form-widget mt-4" data-aos="fade-left" data-aos-delay="100">
+                         <h5 class="widget-title-form"><i class="fas fa-image me-2"></i>Featured Image</h5>
+                         <div class="image-upload-area" id="imageUploadArea" style="cursor:pointer">
+                             <div class="image-preview" id="imagePreview">
+                                 {% if blog and blog.featured_image and blog.featured_image.url %}
+                                 <img src="{{ blog.featured_image.url }}" alt="Featured" id="previewImg">
+                                 {% else %}
+                                 <div class="image-placeholder">
+                                     <i class="fas fa-cloud-upload-alt"></i>
+                                     <p>Click or drag to upload</p>
+                                     <small>PNG, JPG, WEBP up to 5MB</small>
+                                 </div>
+                                 {% endif %}
+                             </div>
+                             {{ form.featured_image }}
+                         </div>
+                         {% if form.featured_image.errors %}
+                         <div class="field-error">{{ form.featured_image.errors.0 }}</div>
+                         {% endif %}
+                     </div>
+
+                    <!-- Category -->
+                    <div class="sidebar-form-widget mt-4" data-aos="fade-left" data-aos-delay="150">
+                        <h5 class="widget-title-form"><i class="fas fa-folder me-2"></i>Category</h5>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                        <div class="field-error">{{ form.category.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="sidebar-form-widget mt-4" data-aos="fade-left" data-aos-delay="200">
+                        <h5 class="widget-title-form"><i class="fas fa-tags me-2"></i>Tags</h5>
+                        {{ form.tags_input }}
+                        <div class="tags-preview" id="tagsPreview"></div>
+                        <small class="text-muted">Separate with commas</small>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="sidebar-form-widget mt-4" data-aos="fade-left" data-aos-delay="250">
+                        <h5 class="widget-title-form"><i class="fas fa-cog me-2"></i>Options</h5>
+                        <div class="form-check custom-check">
+                            {{ form.allow_comments }}
+                            <label class="form-check-label" for="{{ form.allow_comments.id_for_label }}">
+                                Allow Comments
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.ckeditor.com/ckeditor5/42.0.0/ckeditor5.umd.js"></script>
+<script>
+(function() {
+    const contentHidden = document.getElementById('contentHidden');
+    const blogEditor = document.getElementById('blogEditor');
+
+    // Fallback: show textarea if editor fails
+    function showFallbackEditor() {
+        if (contentHidden && blogEditor) {
+            blogEditor.style.display = 'none';
+            contentHidden.classList.remove('d-none');
+            if (window.KVToast) KVToast.show('Using basic text editor (CKEditor unavailable)', 'info');
+        }
+    }
+
+    // Initialize CKEditor
+    function initEditor() {
+        // CKEditor 5 UMD exports directly to window
+        const editorModule = window.ClassicEditor || (window.CKEDITOR && window.CKEDITOR.ClassicEditor);
+        
+        if (!editorModule) {
+            console.error('CKEditor not loaded');
+            showFallbackEditor();
+            return;
+        }
+
+        // Get plugins - CKEditor 5 builds may include them differently
+        const editorPlugins = [
+            window.Essentials || editorModule.Essentials,
+            window.Bold || editorModule.Bold,
+            window.Italic || editorModule.Italic,
+            window.Link || editorModule.Link,
+            window.Paragraph || editorModule.Paragraph,
+            window.Heading || editorModule.Heading,
+            window.List || editorModule.List,
+            window.BlockQuote || editorModule.BlockQuote,
+            window.Table || editorModule.Table,
+            window.MediaEmbed || editorModule.MediaEmbed,
+            window.Code || editorModule.Code,
+            window.CodeBlock || editorModule.CodeBlock,
+            window.Indent || editorModule.Indent,
+            window.Alignment || editorModule.Alignment,
+            window.HorizontalLine || editorModule.HorizontalLine
+        ].filter(Boolean);
+
+        const config = {};
+        if (editorPlugins.length > 0) {
+            config.plugins = editorPlugins;
+            config.toolbar = {
+                items: ['heading', '|', 'bold', 'italic', '|', 'link', 'blockQuote', 'code', '|',
+                    'bulletedList', 'numberedList', '|', 'insertTable', 'mediaEmbed', '|',
+                    'indent', 'outdent', '|', 'alignment', 'horizontalLine', '|', 'undo', 'redo']
+            };
+        }
+
+        editorModule.create(blogEditor, config).then(ckeditor => {
+                window.editorInstance = ckeditor;
+                ckeditor.model.document.on('change:data', () => {
+                    contentHidden.value = ckeditor.getData();
+                });
+                // Sync existing content
+                if (contentHidden.value) {
+                    ckeditor.setData(contentHidden.value);
+                }
+            }).catch(err => {
+                console.error('CKEditor error:', err);
+                showFallbackEditor();
+            });
+    }
+
+    // Ensure script is loaded before initializing
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Double-check script loaded
+            if (!window.ClassicEditor) {
+                // Wait a bit more for CDN
+                let tries = 0;
+                const checkInterval = setInterval(() => {
+                    if (window.ClassicEditor || ++tries > 10) {
+                        clearInterval(checkInterval);
+                        initEditor();
+                    }
+                }, 200);
+            } else {
+                initEditor();
+            }
+        });
+    } else {
+        // Page already loaded, wait for script
+        let tries = 0;
+        const checkInterval = setInterval(() => {
+            if (window.ClassicEditor || ++tries > 10) {
+                clearInterval(checkInterval);
+                initEditor();
+            }
+        }, 200);
+    }
+
+    // Title counter
+    const titleInput = document.querySelector('[name="title"]');
+    const titleCounter = document.getElementById('titleCounter');
+    if (titleInput) {
+        titleInput.addEventListener('input', () => {
+            titleCounter.textContent = `${titleInput.value.length}/300`;
+        });
+        titleCounter.textContent = `${titleInput.value.length}/300`;
+    }
+
+    // Meta title counter
+    const metaTitleInput = document.querySelector('[name="meta_title"]');
+    const metaTitleCounter = document.getElementById('metaTitleCounter');
+    if (metaTitleInput) {
+        metaTitleInput.addEventListener('input', () => {
+            metaTitleCounter.textContent = `${metaTitleInput.value.length}/70`;
+        });
+        metaTitleCounter.textContent = `${metaTitleInput.value.length}/70`;
+    }
+
+    // Meta description counter
+    const metaDescInput = document.querySelector('[name="meta_description"]');
+    const metaDescCounter = document.getElementById('metaDescCounter');
+    if (metaDescInput) {
+        metaDescInput.addEventListener('input', () => {
+            metaDescCounter.textContent = `${metaDescInput.value.length}/160`;
+        });
+        metaDescCounter.textContent = `${metaDescInput.value.length}/160`;
+    }
+
+// Image preview with better error handling and click to upload
+     const imageInput = document.querySelector('[name="featured_image"]');
+     const uploadArea = document.getElementById('imageUploadArea');
+     
+     if (imageInput && uploadArea) {
+         // Click on area opens file dialog
+         uploadArea.addEventListener('click', () => {
+             imageInput.click();
+         });
+         
+         imageInput.addEventListener('change', function() {
+             const file = this.files[0];
+             if (file) {
+                 // Validate file type
+                 const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+                 if (!validTypes.includes(file.type)) {
+                     if (window.KVToast) KVToast.show('Please select a valid image file (PNG, JPG, WEBP, GIF)', 'error');
+                     this.value = '';
+                     return;
+                 }
+                 // Validate file size (5MB)
+                 if (file.size > 5 * 1024 * 1024) {
+                     if (window.KVToast) KVToast.show('Image size must be less than 5MB', 'error');
+                     this.value = '';
+                     return;
+                 }
+                 const reader = new FileReader();
+                 reader.onload = e => {
+                     document.getElementById('imagePreview').innerHTML = `<img src="${e.target.result}" alt="Preview" id="previewImg" style="width:100%;height:180px;object-fit:cover;">`;
+                 };
+                 reader.readAsDataURL(file);
+             }
+         });
+     }
+
+    // Tags preview
+    const tagsInput = document.querySelector('[name="tags_input"]');
+    const tagsPreview = document.getElementById('tagsPreview');
+    
+    function updateTagsPreview() {
+        const tags = tagsInput.value.split(',').map(t => t.trim()).filter(Boolean);
+        tagsPreview.innerHTML = tags.map(t => `<span class="tag-pill-sm">${t}</span>`).join('');
+    }
+    
+    tagsInput.addEventListener('input', updateTagsPreview);
+    updateTagsPreview();
+
+    // Form validation on submit
+    document.getElementById('blogForm').addEventListener('submit', function(e) {
+        const title = titleInput.value.trim();
+        const contentField = document.getElementById('contentHidden');
+        const content = (window.editorInstance ? window.editorInstance.getData() : contentField.value).trim();
+        if (window.editorInstance) {
+            contentField.value = window.editorInstance.getData();
+        }
+
+        const notifyError = msg => {
+            if (typeof showToast === 'function') {
+                showToast(msg, 'error');
+            } else if (window.KVToast && typeof KVToast.show === 'function') {
+                KVToast.show(msg, 'error');
+            } else {
+                alert(msg);
+            }
+        };
+
+        if (!title) {
+            e.preventDefault();
+            notifyError('Please enter a blog title');
+            titleInput.focus();
+            return;
+        }
+
+        if (!content) {
+            e.preventDefault();
+            notifyError('Please enter blog content');
+            if (window.editorInstance) window.editorInstance.editing.view.focus();
+            return;
+        }
+
+        const categoryInput = document.querySelector('[name="category"]');
+        if (categoryInput && !categoryInput.value) {
+            e.preventDefault();
+            notifyError('Please select a category');
+            categoryInput.focus();
+            return;
+        }
+    });
+})();
+</script>
+{% endblock %}

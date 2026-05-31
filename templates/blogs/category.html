@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ category.name }} — BlogPlatform{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header" style="background: linear-gradient(135deg, {{ category.color }}22 0%, {{ category.color }}11 100%);">
+    <div class="page-header-bg">
+        <div class="page-header-glow" style="background: radial-gradient(circle, {{ category.color }}33 0%, transparent 70%);"></div>
+    </div>
+    <div class="container-xl">
+        <div data-aos="fade-up">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                {% if category.icon %}
+                <span class="cat-icon-lg" style="color: {{ category.color }}; border-color: {{ category.color }}44;">
+                    <i class="fas {{ category.icon }}"></i>
+                </span>
+                {% endif %}
+                <h1 class="page-header-title mb-0">{{ category.name }}</h1>
+            </div>
+            {% if category.description %}
+            <p class="page-header-sub mb-0">{{ category.description }}</p>
+            {% else %}
+            <p class="page-header-sub mb-0">Browse all articles matching the "{{ category.name }}" category.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar sticky-filter">
+    <div class="container-xl">
+        <div class="d-flex gap-3 align-items-center flex-wrap justify-content-between">
+            <div class="breadcrumbs">
+                <a href="{% url 'blogs:list' %}" class="breadcrumb-link"><i class="fas fa-home me-1"></i>Home</a>
+                <span class="breadcrumb-sep"><i class="fas fa-chevron-right"></i></span>
+                <a href="{% url 'blogs:categories_list' %}" class="breadcrumb-link">Categories</a>
+                <span class="breadcrumb-sep"><i class="fas fa-chevron-right"></i></span>
+                <span class="breadcrumb-current" style="color: {{ category.color }}">{{ category.name }}</span>
+            </div>
+            <div class="search-bar-wrap" style="max-width:320px; flex:1;">
+                <form method="get" action="{% url 'blogs:list' %}">
+                    <input type="hidden" name="category" value="{{ category.slug }}">
+                    <input type="text" name="q" class="search-bar-input" style="padding:10px 40px 10px 18px; font-size:.875rem;" placeholder="Search in category...">
+                    <button type="submit" class="search-bar-btn"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-xl py-5">
+    <div class="row g-4">
+        <!-- Blog Grid -->
+        <div class="col-lg-8">
+            {% if blogs %}
+            <div class="row g-4">
+                {% for blog in blogs %}
+                <div class="col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'0' }}50">
+                    <a href="{{ blog.get_absolute_url }}" class="blog-card">
+                        <div class="blog-card-img">
+                            <img src="{{ blog.get_featured_image_url }}" alt="{{ blog.title }}" loading="lazy">
+                            <div class="blog-card-overlay"></div>
+                            <span class="blog-card-category" style="background: {{ category.color }}">{{ category.name }}</span>
+                            <span class="blog-card-read-time"><i class="fas fa-clock me-1"></i>{{ blog.read_time }}</span>
+                        </div>
+                        <div class="blog-card-body">
+                            <span class="blog-card-title">{{ blog.title|truncatechars:65 }}</span>
+                            <p class="blog-card-excerpt">{{ blog.excerpt|default:blog.content|striptags|truncatechars:100 }}</p>
+                            <div class="blog-card-footer">
+                                <div class="blog-card-author">
+                                    <img src="{{ blog.author.profile.get_avatar_url }}" alt="{{ blog.author.get_full_name }}">
+                                    <div>
+                                        <div class="blog-card-author-name">{{ blog.author.get_full_name|truncatechars:18 }}</div>
+                                        <div class="blog-card-date">{{ blog.published_at|date:"M d, Y" }}</div>
+                                    </div>
+                                </div>
+                                <div class="blog-card-stats">
+                                    <span class="blog-stat-item"><i class="far fa-eye"></i> {{ blog.views_count|default:0|intcomma }}</span>
+                                    <span class="blog-stat-item"><i class="far fa-heart"></i> {{ blog.likes.count }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if blogs.has_other_pages %}
+            <nav class="pagination-nav mt-5">
+                <ul class="pagination-list">
+                    {% if blogs.has_previous %}
+                    <li><a href="?page={{ blogs.previous_page_number }}" class="page-btn prev">
+                        <i class="fas fa-chevron-left"></i>
+                    </a></li>
+                    {% endif %}
+                    {% for num in blogs.paginator.page_range %}
+                    {% if blogs.number == num %}
+                    <li><span class="page-btn active">{{ num }}</span></li>
+                    {% elif num > blogs.number|add:'-3' and num < blogs.number|add:'3' %}
+                    <li><a href="?page={{ num }}" class="page-btn">{{ num }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if blogs.has_next %}
+                    <li><a href="?page={{ blogs.next_page_number }}" class="page-btn next">
+                        <i class="fas fa-chevron-right"></i>
+                    </a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-results" data-aos="fade-up">
+                <div class="empty-results-icon"><i class="fas fa-folder-open"></i></div>
+                <h3>No articles found in {{ category.name }}</h3>
+                <p>There are no articles published in this category yet. Stay tuned for upcoming posts!</p>
+                <a href="{% url 'blogs:list' %}" class="btn-primary-custom mt-3">Browse Other Articles</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="col-lg-4">
+            <div class="sidebar sticky-sidebar">
+                <!-- Share your story -->
+                {% if user.is_authenticated %}
+                <div class="sidebar-cta">
+                    <h4>Write for {{ category.name }}</h4>
+                    <p>Inspire others by creating your article inside this topic category.</p>
+                    <a href="{% url 'blogs:create' %}" class="btn-primary-custom w-100">
+                        <i class="fas fa-pen me-2"></i>Write Article
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Browse Categories -->
+                <div class="sidebar-widget">
+                    <h4 class="widget-title">Other Categories</h4>
+                    <ul class="sidebar-cats">
+                        {% for cat in categories %}
+                        <li>
+                            <a href="{{ cat.get_absolute_url }}" class="sidebar-cat-link {% if category.slug == cat.slug %}active{% endif %}">
+                                <span class="cat-dot" style="background: {{ cat.color }}"></span>
+                                {{ cat.name }}
+                                <span class="ms-auto text-muted small">{{ cat.blog_count }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Bookmark from list
+$('.bookmark-btn').on('click', function(e) {
+    e.preventDefault();
+    {% if user.is_authenticated %}
+    const btn = $(this);
+    const slug = btn.data('slug');
+    $.post(`/blogs/${slug}/bookmark/`, {csrfmiddlewaretoken: '{{ csrf_token }}'})
+        .done(data => {
+            btn.toggleClass('bookmarked', data.bookmarked);
+            showToast(data.bookmarked ? 'Bookmarked!' : 'Removed from bookmarks', 'success');
+        });
+    {% else %}
+    window.location.href = '{% url "accounts:login" %}';
+    {% endif %}
+});
+</script>
+{% endblock %}

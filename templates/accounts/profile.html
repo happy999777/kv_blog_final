@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}{% load humanize %}
+{% block title %}{{ profile_user.get_full_name }} — KV Blog{% endblock %}
+{% block content %}
+
+<!-- Profile Hero -->
+<div class="profile-hero">
+  <div class="container-xl">
+    <div class="d-flex align-items-end gap-4 flex-wrap">
+      <img src="{{ profile_user.profile.get_avatar_url }}" class="profile-avatar" alt="{{ profile_user.get_full_name }}">
+      <div style="flex:1">
+        <div class="d-flex align-items-center gap-3 mb-2 flex-wrap">
+          <h1 class="profile-name mb-0">{{ profile_user.get_full_name }}</h1>
+          <span class="role-badge {% if profile_user.is_staff %}admin{% else %}author{% endif %}" style="font-size:.75rem">
+            {{ profile_user.profile.title|default:"Writer" }}
+          </span>
+        </div>
+        <p class="profile-bio">{{ profile_user.profile.bio|default:"Passionate writer sharing ideas and knowledge with the world." }}</p>
+        <div class="d-flex align-items-center gap-4 mt-3 flex-wrap">
+          <div style="color:rgba(255,255,255,.8);font-size:.85rem"><i class="fas fa-newspaper me-2"></i><strong>{{ blogs.paginator.count }}</strong> Posts</div>
+          <div style="color:rgba(255,255,255,.8);font-size:.85rem"><i class="fas fa-eye me-2"></i><strong>{{ total_views|intcomma }}</strong> Views</div>
+          <div style="color:rgba(255,255,255,.8);font-size:.85rem"><i class="far fa-calendar me-2"></i>Joined {{ profile_user.date_joined|date:"M Y" }}</div>
+        </div>
+      </div>
+      {% if request.user == profile_user %}
+      <div class="d-flex gap-2">
+        <a href="{% url 'dashboard:settings' %}" class="btn-secondary-custom" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:white;padding:9px 18px">
+          <i class="fas fa-pen me-2"></i>Edit Profile
+        </a>
+        <a href="{% url 'dashboard:home' %}" class="btn-secondary-custom" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:white;padding:9px 18px">
+          <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+        </a>
+      </div>
+      {% elif request.user.is_authenticated %}
+      <button class="btn-secondary-custom follow-btn" data-user="{{ profile_user.username }}" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:white;padding:9px 18px">
+        <i class="fas fa-user-plus me-2"></i>Follow
+      </button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="container-xl py-5">
+  <div class="row g-5">
+    <div class="col-lg-8">
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 style="font-family:var(--font-head);font-size:1.3rem;font-weight:700">
+          Articles by {{ profile_user.first_name }}
+        </h2>
+        <span style="font-size:.85rem;color:var(--text-muted)">{{ blogs.paginator.count }} posts total</span>
+      </div>
+
+      <div class="row g-4">
+        {% for blog in blogs %}
+        <div class="col-md-6 fade-up" style="transition-delay:{{ forloop.counter0 }}00ms">
+          <a href="{{ blog.get_absolute_url }}" class="blog-card">
+            <div class="blog-card-img">
+              <img src="{{ blog.get_featured_image_url }}" alt="{{ blog.title }}" loading="lazy">
+              <div class="blog-card-overlay"></div>
+              <span class="blog-card-category">{{ blog.category.name|default:"General" }}</span>
+              <span class="blog-card-read-time"><i class="fas fa-clock me-1"></i>{{ blog.read_time }}</span>
+            </div>
+            <div class="blog-card-body">
+              <span class="blog-card-title">{{ blog.title|truncatechars:65 }}</span>
+              <p class="blog-card-excerpt">{{ blog.excerpt|default:blog.content|striptags|truncatechars:100 }}</p>
+              <div class="blog-card-footer">
+                <span class="blog-card-date"><i class="far fa-calendar me-1"></i>{{ blog.published_at|date:"M d, Y" }}</span>
+                <div class="blog-card-stats">
+                  <span class="blog-stat-item"><i class="far fa-eye"></i> {{ blog.views_count|default:0|intcomma }}</span>
+                  <span class="blog-stat-item"><i class="far fa-heart"></i> {{ blog.likes.count }}</span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+          <i class="fas fa-pen" style="font-size:3rem;color:var(--gray-300);display:block;margin-bottom:16px"></i>
+          <p class="text-muted">No published posts yet.</p>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if blogs.has_other_pages %}
+      <div class="pagination-wrap">
+        <nav><ul class="pagination">
+          {% if blogs.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ blogs.previous_page_number }}"><i class="fas fa-chevron-left"></i></a></li>{% endif %}
+          {% for num in blogs.paginator.page_range %}
+            {% if blogs.number == num %}<li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > blogs.number|add:'-3' and num < blogs.number|add:'3' %}<li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>{% endif %}
+          {% endfor %}
+          {% if blogs.has_next %}<li class="page-item"><a class="page-link" href="?page={{ blogs.next_page_number }}"><i class="fas fa-chevron-right"></i></a></li>{% endif %}
+        </ul></nav>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+      <div style="position:sticky;top:calc(var(--navbar-h)+20px)">
+        <div class="sidebar-widget">
+          <h3 class="widget-title"><i class="fas fa-user"></i> About</h3>
+          <p style="font-size:.875rem;color:var(--text-secondary);line-height:1.6">
+            {{ profile_user.profile.bio|default:"No bio yet." }}
+          </p>
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            {% if profile_user.profile.website %}<a href="{{ profile_user.profile.website }}" target="_blank" class="tag-pill"><i class="fas fa-globe me-1"></i>Website</a>{% endif %}
+            {% if profile_user.profile.twitter %}<a href="{{ profile_user.profile.twitter }}" target="_blank" class="tag-pill"><i class="fab fa-twitter me-1"></i>Twitter</a>{% endif %}
+            {% if profile_user.profile.linkedin %}<a href="{{ profile_user.profile.linkedin }}" target="_blank" class="tag-pill"><i class="fab fa-linkedin me-1"></i>LinkedIn</a>{% endif %}
+          </div>
+        </div>
+
+        <div class="sidebar-widget">
+          <h3 class="widget-title"><i class="fas fa-chart-bar"></i> Stats</h3>
+          <div class="row g-3 text-center">
+            <div class="col-6">
+              <div style="background:var(--orange-pale);border-radius:var(--radius-md);padding:14px">
+                <div style="font-size:1.4rem;font-weight:800;color:var(--orange);font-family:var(--font-head)">{{ blogs.paginator.count }}</div>
+                <div style="font-size:.75rem;color:var(--text-muted)">Posts</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:14px">
+                <div style="font-size:1.4rem;font-weight:800;color:var(--text-primary);font-family:var(--font-head)">{{ total_views|intcomma }}</div>
+                <div style="font-size:.75rem;color:var(--text-muted)">Views</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load humanize %}
+{% block title %}My Posts — KV Blog{% endblock %}
+{% block topbar_title %}My Posts{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-page-title">My Posts</div>
+<p class="dashboard-page-subtitle">Manage all your blog articles.</p>
+
+<div class="d-flex gap-2 mb-4 flex-wrap">
+  {% for s, label, count in status_choices %}
+  <a href="?status={{ s }}" class="filter-chip {% if status_filter == s %}active{% endif %}">{{ label }} ({{ count }})</a>
+  {% endfor %}
+  <a href="{% url 'blogs:create' %}" class="btn-primary-custom ms-auto" style="padding:8px 18px;font-size:.85rem"><i class="fas fa-pen me-2"></i>Write New</a>
+</div>
+
+<div class="dashboard-table">
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Views</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for blog in blogs %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <img src="{{ blog.get_featured_image_url }}" style="width:46px;height:36px;border-radius:6px;object-fit:cover" alt="">
+              <div>
+                <div style="font-weight:600;font-size:.875rem;color:var(--text-primary)">{{ blog.title|truncatechars:50 }}</div>
+                <div style="font-size:.75rem;color:var(--text-muted)">{{ blog.read_time }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="tag-pill" style="font-size:.72rem">{{ blog.category.name|default:"—" }}</span></td>
+          <td><span class="status-badge status-{{ blog.status }}">{{ blog.get_status_display }}</span></td>
+          <td>{{ blog.views_count|default:0|intcomma }}</td>
+          <td style="font-size:.82rem;color:var(--text-muted)">{{ blog.created_at|date:"M d, Y" }}</td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{{ blog.get_absolute_url }}" class="action-btn action-btn-view" title="View"><i class="fas fa-eye"></i></a>
+              <a href="{% url 'blogs:edit' blog.slug %}" class="action-btn action-btn-edit" title="Edit"><i class="fas fa-pen"></i></a>
+              <button class="action-btn action-btn-delete" data-action="delete" data-id="{{ blog.id }}" data-type="blog" title="Delete"><i class="fas fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-5 text-muted">No posts yet. <a href="{% url 'blogs:create' %}" class="text-orange">Create your first post!</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if blogs.has_other_pages %}
+  <div class="p-3 border-top">
+    <nav class="pagination-wrap m-0">
+      <ul class="pagination">
+        {% if blogs.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ blogs.previous_page_number }}&status={{ status_filter }}"><i class="fas fa-chevron-left"></i></a></li>{% endif %}
+        {% for num in blogs.paginator.page_range %}
+        {% if blogs.number == num %}<li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > blogs.number|add:'-3' and num < blogs.number|add:'3' %}<li class="page-item"><a class="page-link" href="?page={{ num }}&status={{ status_filter }}">{{ num }}</a></li>{% endif %}
+        {% endfor %}
+        {% if blogs.has_next %}<li class="page-item"><a class="page-link" href="?page={{ blogs.next_page_number }}&status={{ status_filter }}"><i class="fas fa-chevron-right"></i></a></li>{% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}All Articles — BlogPlatform{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-bg">
+        <div class="page-header-glow"></div>
+    </div>
+    <div class="container-xl">
+        <div data-aos="fade-up">
+            <h1 class="page-header-title">All Articles</h1>
+            <p class="page-header-sub">Curated, reviewed, and ready to inspire.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar sticky-filter">
+    <div class="container-xl">
+        <div class="d-flex gap-3 align-items-center flex-wrap">
+            <div class="filter-search">
+                <form method="get" action="{% url 'blogs:list' %}" class="d-flex gap-2">
+                    <input type="text" name="q" value="{{ search_q }}" class="filter-input" placeholder="Search articles...">
+                    {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+                    <button type="submit" class="filter-search-btn"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+            <div class="filter-cats ms-auto d-flex gap-2 flex-wrap">
+                <a href="{% url 'blogs:list' %}{% if search_q %}?q={{ search_q }}{% endif %}" 
+                   class="filter-cat-btn {% if not current_category %}active{% endif %}">All</a>
+                {% for cat in categories %}
+                <a href="{% url 'blogs:list' %}?category={{ cat.slug }}{% if search_q %}&q={{ search_q }}{% endif %}"
+                   class="filter-cat-btn {% if current_category == cat.slug %}active{% endif %}">{{ cat.name }}</a>
+                {% endfor %}
+            </div>
+            <select class="filter-sort" onchange="window.location.href=this.value">
+                <option value="{% url 'blogs:list' %}?sort=-published_at{% if current_category %}&category={{ current_category }}{% endif %}" {% if sort == '-published_at' %}selected{% endif %}>Latest</option>
+                <option value="{% url 'blogs:list' %}?sort=-views_count{% if current_category %}&category={{ current_category }}{% endif %}" {% if sort == '-views_count' %}selected{% endif %}>Most Viewed</option>
+                <option value="{% url 'blogs:list' %}?sort=-likes_count{% if current_category %}&category={{ current_category }}{% endif %}" {% if sort == '-likes_count' %}selected{% endif %}>Most Liked</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="container-xl py-5">
+    <div class="row g-4">
+        <!-- Blog Grid -->
+        <div class="col-lg-8">
+            {% if search_q %}
+            <p class="search-result-info mb-4">
+                <strong>{{ blogs.paginator.count }}</strong> results for "<em>{{ search_q }}</em>"
+            </p>
+            {% endif %}
+            {% if blogs %}
+            <div class="row g-4">
+                {% for blog in blogs %}
+                <div class="col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'0' }}50">
+                    <article class="blog-card">
+                        <div class="blog-card-img">
+                            <a href="{{ blog.get_absolute_url }}">
+                                {% if blog.get_featured_image_url %}
+                                <img src="{{ blog.get_featured_image_url }}" alt="{{ blog.title }}" loading="lazy">
+                                {% endif %}
+                            </a>
+                            {% if blog.category %}
+                            <a href="{{ blog.category.get_absolute_url }}" class="blog-card-cat" style="background: {{ blog.category.color }}">
+                                {{ blog.category.name }}
+                            </a>
+                            {% endif %}
+                            <button class="blog-card-bookmark bookmark-btn" data-slug="{{ blog.slug }}">
+                                <i class="fas fa-bookmark"></i>
+                            </button>
+                        </div>
+                        <div class="blog-card-body">
+                            <div class="blog-card-meta">
+                                <img src="{{ blog.author.profile.get_avatar_url }}" class="meta-avatar" alt="">
+                                <a href="{{ blog.author.get_absolute_url }}" class="meta-author">{{ blog.author.get_full_name }}</a>
+                                <span class="meta-sep">·</span>
+                                <span class="meta-date">{{ blog.published_at|date:"M j, Y" }}</span>
+                            </div>
+                            <h3 class="blog-card-title">
+                                <a href="{{ blog.get_absolute_url }}">{{ blog.title|truncatechars:75 }}</a>
+                            </h3>
+                            <p class="blog-card-excerpt">{{ blog.excerpt|truncatechars:110 }}</p>
+                            <div class="blog-card-footer">
+                                <div class="blog-card-stats">
+                                    <span><i class="fas fa-eye"></i> {{ blog.views_count|intcomma }}</span>
+                                    <span><i class="fas fa-heart"></i> {{ blog.likes_count }}</span>
+                                </div>
+                                <span class="read-time-badge">{{ blog.read_time }}</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if blogs.has_other_pages %}
+            <nav class="pagination-nav mt-5">
+                <ul class="pagination-list">
+                    {% if blogs.has_previous %}
+                    <li><a href="?page={{ blogs.previous_page_number }}{% if search_q %}&q={{ search_q }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="page-btn prev">
+                        <i class="fas fa-chevron-left"></i>
+                    </a></li>
+                    {% endif %}
+                    {% for num in blogs.paginator.page_range %}
+                    {% if blogs.number == num %}
+                    <li><span class="page-btn active">{{ num }}</span></li>
+                    {% elif num > blogs.number|add:'-3' and num < blogs.number|add:'3' %}
+                    <li><a href="?page={{ num }}{% if search_q %}&q={{ search_q }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="page-btn">{{ num }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if blogs.has_next %}
+                    <li><a href="?page={{ blogs.next_page_number }}{% if search_q %}&q={{ search_q }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="page-btn next">
+                        <i class="fas fa-chevron-right"></i>
+                    </a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-results" data-aos="fade-up">
+                <div class="empty-results-icon"><i class="fas fa-search"></i></div>
+                <h3>No articles found</h3>
+                <p>Try different keywords or browse categories</p>
+                <a href="{% url 'blogs:list' %}" class="btn-primary-custom mt-3">Browse All</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="col-lg-4">
+            <div class="sidebar sticky-sidebar">
+                {% if user.is_authenticated %}
+                <div class="sidebar-cta">
+                    <h4>Share Your Story</h4>
+                    <p>Got something to say? Write and submit your article for review.</p>
+                    <a href="{% url 'blogs:create' %}" class="btn-primary-custom w-100">
+                        <i class="fas fa-pen me-2"></i>Write Now
+                    </a>
+                </div>
+                {% else %}
+                <div class="sidebar-cta">
+                    <h4>Join Our Community</h4>
+                    <p>Sign up to write, like, bookmark, and comment on articles.</p>
+                    <a href="{% url 'accounts:register' %}" class="btn-primary-custom w-100">Get Started Free</a>
+                </div>
+                {% endif %}
+
+                <!-- Popular Tags -->
+                <div class="sidebar-widget">
+                    <h4 class="widget-title">Popular Tags</h4>
+                    <div class="sidebar-tags">
+                        {% for tag in popular_tags %}
+                        <a href="{{ tag.get_absolute_url }}" class="tag-pill {% if current_tag == tag.slug %}active{% endif %}">{{ tag.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Categories -->
+                <div class="sidebar-widget">
+                    <h4 class="widget-title">Browse Categories</h4>
+                    <ul class="sidebar-cats">
+                        {% for cat in categories %}
+                        <li>
+                            <a href="{{ cat.get_absolute_url }}" class="sidebar-cat-link {% if current_category == cat.slug %}active{% endif %}">
+                                <span class="cat-dot" style="background: {{ cat.color }}"></span>
+                                {{ cat.name }}
+                                <span class="ms-auto text-muted small">{{ cat.blog_count }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Bookmark from list
+$('.bookmark-btn').on('click', function(e) {
+    e.preventDefault();
+    {% if user.is_authenticated %}
+    const btn = $(this);
+    const slug = btn.data('slug');
+    $.post(`/blogs/${slug}/bookmark/`, {csrfmiddlewaretoken: '{{ csrf_token }}'})
+        .done(data => {
+            btn.toggleClass('bookmarked', data.bookmarked);
+            showToast(data.bookmarked ? 'Bookmarked!' : 'Removed from bookmarks', 'success');
+        });
+    {% else %}
+    window.location.href = '{% url "accounts:login" %}';
+    {% endif %}
+});
+</script>
+{% endblock %}

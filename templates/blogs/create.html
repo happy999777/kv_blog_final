@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Write New Post — KV Blog{% endblock %}
+{% block content %}
+<div class="blog-list-header">
+  <div class="container-xl">
+    <span class="section-eyebrow">{% if blog %}Edit Post{% else %}Create New Post{% endif %}</span>
+    <h1 class="section-title">{% if blog %}Edit: {{ blog.title|truncatechars:40 }}{% else %}Write a New Article{% endif %}</h1>
+  </div>
+</div>
+
+<div class="container-xl py-5">
+  <div class="row g-5">
+    <div class="col-lg-8">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="blog-form-card mb-4">
+          <h3 class="form-section-title">Post Details</h3>
+          <div class="mb-3">
+            <label class="form-label">Post Title *</label>
+            {{ form.title }}
+            {% if form.title.errors %}<div class="text-danger mt-1" style="font-size:.82rem">{{ form.title.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Excerpt / Short Description</label>
+            {{ form.excerpt }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Content *</label>
+            {{ form.content }}
+            {% if form.content.errors %}<div class="text-danger mt-1" style="font-size:.82rem">{{ form.content.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="blog-form-card mb-4">
+          <h3 class="form-section-title">Featured Image</h3>
+          <div class="image-upload-zone" id="uploadZone">
+            <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+            <p style="font-weight:600;color:var(--text-primary);margin-bottom:4px">Drop image here or click to upload</p>
+            <p style="font-size:.82rem;color:var(--text-muted)">JPG, PNG, WEBP up to 5MB • Recommended: 1200×630px</p>
+            {{ form.featured_image }}
+          </div>
+          {% if form.featured_image.errors %}<div class="text-danger mt-1" style="font-size:.82rem" id="featuredImageErrors">{{ form.featured_image.errors.0 }}</div>{% endif %}
+          <img id="imagePreview" class="image-preview" alt="Preview"
+               {% if blog.featured_image %}src="{{ blog.featured_image.url }}" style="display:block"{% else %}style="display:none"{% endif %}>
+          <div id="imageValidationError" class="text-danger mt-1" style="font-size:.82rem;display:none"></div>
+        </div>
+
+        <div class="blog-form-card">
+          <button type="submit" name="action" value="publish" class="btn-primary-custom me-2">
+            <i class="fas fa-paper-plane me-2"></i>{% if blog %}Update Post{% else %}Submit for Review{% endif %}
+          </button>
+          <button type="submit" name="action" value="draft" class="btn-secondary-custom">
+            <i class="fas fa-save me-2"></i>Save as Draft
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="blog-form-card mb-4" style="position:sticky;top:calc(var(--navbar-h)+20px)">
+        <h3 class="form-section-title">Publish Settings</h3>
+        <div class="mb-3">
+          <label class="form-label">Category *</label>
+          {{ form.category }}
+          {% if form.category.errors %}<div class="text-danger mt-1" style="font-size:.82rem">{{ form.category.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Tags</label>
+          {{ form.tags }}
+          <div style="font-size:.78rem;color:var(--text-muted);margin-top:4px">Add tags separated by commas</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Status</label>
+          {% if form.status %}{{ form.status }}{% else %}
+          <select name="status" class="form-control form-select">
+            <option value="draft">Draft</option>
+            <option value="pending" selected>Submit for Review</option>
+          </select>
+          {% endif %}
+        </div>
+        {% if request.user.is_staff %}
+        <div class="mb-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="is_featured" id="isFeatured" {% if blog.is_featured %}checked{% endif %}>
+            <label class="form-check-label" for="isFeatured" style="font-size:.875rem">Mark as Featured</label>
+          </div>
+        </div>
+        {% endif %}
+        <div class="p-3 rounded-3 mb-0" style="background:var(--orange-pale);border:1px solid rgba(255,107,53,.2)">
+          <p style="font-size:.82rem;color:var(--orange-dark);margin:0"><i class="fas fa-info-circle me-2"></i>
+          {% if request.user.is_staff %}Your post will be published immediately.{% else %}Your post will be reviewed by our team before publishing (usually within 24 hours).{% endif %}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function() {
+    const uploadZone = document.getElementById('uploadZone');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const errorDiv = document.getElementById('imageValidationError');
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+    console.log('[Featured Image] Initializing upload handler...');
+
+    if (uploadZone && imageInput) {
+        uploadZone.addEventListener('click', function(e) {
+            if (e.target !== imageInput) {
+                imageInput.click();
+            }
+        });
+
+        uploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                console.log('[Featured Image] File dropped:', file.name, file.type, file.size);
+                handleFile(file);
+            }
+        });
+
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                console.log('[Featured Image] File selected:', file.name, file.type, file.size);
+                handleFile(file);
+            }
+        });
+    } else {
+        console.error('[Featured Image] uploadZone or imageInput not found');
+    }
+
+    function validateFile(file) {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            return 'Invalid file type. Only JPG, PNG, and WEBP images are allowed.';
+        }
+        if (file.size > MAX_FILE_SIZE) {
+            return 'File too large. Maximum size is 5MB.';
+        }
+        return null;
+    }
+
+    function handleFile(file) {
+        const error = validateFile(file);
+        if (error) {
+            errorDiv.textContent = error;
+            errorDiv.style.display = 'block';
+            imagePreview.style.display = 'none';
+            console.error('[Featured Image] Validation error:', error);
+            imageInput.value = '';
+            return;
+        }
+
+        errorDiv.style.display = 'none';
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            console.log('[Featured Image] Preview loaded successfully');
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block';
+        };
+        reader.onerror = function() {
+            console.error('[Featured Image] Failed to read file');
+            errorDiv.textContent = 'Failed to read image file.';
+            errorDiv.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+})();
+</script>
+{% endblock %}

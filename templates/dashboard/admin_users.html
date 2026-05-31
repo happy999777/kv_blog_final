@@ -1,0 +1,55 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load humanize %}
+{% block title %}Manage Users — KV Blog{% endblock %}
+{% block topbar_title %}Manage Users{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-page-title">Manage Users</div>
+<p class="dashboard-page-subtitle">View and manage all registered users.</p>
+<div class="dashboard-table">
+  <div class="dashboard-table-header">
+    <h3 class="dashboard-table-title">All Users ({{ users.paginator.count }})</h3>
+    <form method="get" class="d-flex gap-2">
+      <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Search users..." style="width:200px;font-size:.85rem">
+      <button type="submit" class="btn-primary-custom" style="padding:8px 14px"><i class="fas fa-search"></i></button>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Posts</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <img src="{{ u.profile.get_avatar_url }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--gray-200)" alt="">
+              <div>
+                <div style="font-weight:600;font-size:.875rem">{{ u.get_full_name|default:u.username }}</div>
+                <div style="font-size:.75rem;color:var(--text-muted)">@{{ u.username }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-size:.875rem;color:var(--text-secondary)">{{ u.email }}</td>
+          <td><span class="role-badge {% if u.is_staff %}admin{% elif u.role == 'moderator' %}moderator{% else %}author{% endif %}">{{ u.role|default:"user"|title }}</span></td>
+          <td>{{ u.blog_count|default:0 }}</td>
+          <td style="font-size:.82rem;color:var(--text-muted)">{{ u.date_joined|date:"M d, Y" }}</td>
+          <td>
+            {% if u.is_active %}
+            <span class="status-badge status-approved">Active</span>
+            {% else %}
+            <span class="status-badge status-rejected">Inactive</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'accounts:profile' u.username %}" class="action-btn action-btn-view" title="View Profile"><i class="fas fa-eye"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center py-5 text-muted">No users found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

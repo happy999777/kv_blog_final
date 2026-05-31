@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}{% load humanize %}
+{% block title %}About — KV Blog{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container-xl">
+    <span class="section-eyebrow">Our Story</span>
+    <h1 class="page-hero-title">About <span>KV Blog</span></h1>
+    <p class="section-subtitle">A premium platform where brilliant ideas meet passionate readers.</p>
+  </div>
+</div>
+<div class="container-xl py-5">
+  <div class="row g-5 align-items-center mb-5">
+    <div class="col-lg-6">
+      <span class="section-eyebrow">Who We Are</span>
+      <h2 class="section-title mb-3">A Platform Built for Writers</h2>
+      <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:16px">KV Blog is a premium blogging platform created for curious minds and passionate writers. We believe that everyone has a story worth telling and knowledge worth sharing.</p>
+      <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:24px">Our editorial team curates the best content so you always discover high-quality articles on topics that matter.</p>
+      <div class="row g-3">
+        <div class="col-6"><div class="p-3 rounded-3 text-center" style="background:var(--orange-pale)"><div style="font-size:1.8rem;font-weight:800;color:var(--orange);font-family:var(--font-head)">{{ stats.total_blogs|default:0|intcomma }}+</div><div style="font-size:.82rem;color:var(--text-muted)">Articles Published</div></div></div>
+        <div class="col-6"><div class="p-3 rounded-3 text-center" style="background:var(--orange-pale)"><div style="font-size:1.8rem;font-weight:800;color:var(--orange);font-family:var(--font-head)">{{ stats.total_authors|default:0|intcomma }}+</div><div style="font-size:.82rem;color:var(--text-muted)">Expert Writers</div></div></div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="p-4 rounded-4" style="background:linear-gradient(135deg,var(--orange),var(--orange-dark));color:white">
+        <h3 style="font-family:var(--font-head);font-size:1.4rem;font-weight:700;margin-bottom:20px">Our Mission</h3>
+        <ul style="list-style:none;padding:0">
+          <li class="d-flex gap-3 mb-3"><i class="fas fa-check-circle mt-1" style="color:rgba(255,255,255,.7);flex-shrink:0"></i><span>Deliver high-quality, curated content from expert writers</span></li>
+          <li class="d-flex gap-3 mb-3"><i class="fas fa-check-circle mt-1" style="color:rgba(255,255,255,.7);flex-shrink:0"></i><span>Create a community where knowledge flows freely</span></li>
+          <li class="d-flex gap-3 mb-3"><i class="fas fa-check-circle mt-1" style="color:rgba(255,255,255,.7);flex-shrink:0"></i><span>Empower every voice with the tools to reach the world</span></li>
+          <li class="d-flex gap-3"><i class="fas fa-check-circle mt-1" style="color:rgba(255,255,255,.7);flex-shrink:0"></i><span>Build a premium, ad-free reading experience</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<section class="stats-section">
+  <div class="container-xl">
+    <div class="row g-4">
+      <div class="col-6 col-lg-3"><div class="counter-card"><div class="counter-icon"><i class="fas fa-newspaper"></i></div><div class="counter-number" data-count="{{ stats.total_blogs|default:0 }}">0</div><div class="counter-label">Articles</div></div></div>
+      <div class="col-6 col-lg-3"><div class="counter-card"><div class="counter-icon"><i class="fas fa-users"></i></div><div class="counter-number" data-count="{{ stats.total_authors|default:0 }}">0</div><div class="counter-label">Writers</div></div></div>
+      <div class="col-6 col-lg-3"><div class="counter-card"><div class="counter-icon"><i class="fas fa-eye"></i></div><div class="counter-number" data-count="{{ stats.total_views|default:0 }}">0</div><div class="counter-label">Total Reads</div></div></div>
+      <div class="col-6 col-lg-3"><div class="counter-card"><div class="counter-icon"><i class="fas fa-heart"></i></div><div class="counter-number" data-count="10000">0</div><div class="counter-label">Happy Readers</div></div></div>
+    </div>
+  </div>
+</section>
+{% endblock %}

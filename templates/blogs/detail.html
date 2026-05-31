@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% load static %}{% load humanize %}
+{% block title %}{{ blog.title }} — KV Blog{% endblock %}
+{% block meta_desc %}{{ blog.excerpt|default:blog.content|striptags|truncatechars:160 }}{% endblock %}
+{% block og_title %}{{ blog.title }}{% endblock %}
+{% block og_desc %}{{ blog.excerpt|default:blog.content|striptags|truncatechars:200 }}{% endblock %}
+{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ blog.get_featured_image_url }}{% endblock %}
+
+{% block content %}
+<!-- Reading Progress -->
+<div id="readingProgress"><div id="readingProgressBar"></div></div>
+
+<!-- Sticky Share (desktop) -->
+<div class="sticky-share d-none d-xl-flex">
+  <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="sticky-share-btn share-fb" title="Share on Facebook"><i class="fab fa-facebook-f"></i></a>
+  <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ blog.title|urlencode }}" target="_blank" class="sticky-share-btn share-tw" title="Share on Twitter"><i class="fab fa-twitter"></i></a>
+  <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri }}" target="_blank" class="sticky-share-btn share-li" title="Share on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+  <a href="https://wa.me/?text={{ blog.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}" target="_blank" class="sticky-share-btn share-wa" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  <button class="sticky-share-btn share-copy" title="Copy Link" onclick="navigator.clipboard.writeText(window.location.href).then(()=>KVToast.show('Link copied!','success'))"><i class="fas fa-link"></i></button>
+</div>
+
+<div class="container-xl py-5">
+  <div class="row g-5">
+    <!-- Article -->
+    <div class="col-lg-8">
+
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb" style="font-size:.82rem">
+          <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-orange text-decoration-none">Home</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'blogs:list' %}" class="text-orange text-decoration-none">Blog</a></li>
+          {% if blog.category %}<li class="breadcrumb-item"><a href="{{ blog.category.get_absolute_url }}" class="text-orange text-decoration-none">{{ blog.category.name }}</a></li>{% endif %}
+          <li class="breadcrumb-item active" style="color:var(--text-muted)">{{ blog.title|truncatechars:30 }}</li>
+        </ol>
+      </nav>
+
+      <!-- Hero Image -->
+      <div class="blog-hero">
+        <img src="{{ blog.get_featured_image_url }}" alt="{{ blog.title }}" loading="eager">
+        <div class="blog-hero-overlay"></div>
+        <div class="blog-hero-body">
+          <span class="blog-card-category" style="position:static;margin-bottom:12px;display:inline-block">{{ blog.category.name|default:"General" }}</span>
+          <h1 style="font-family:var(--font-head);font-size:clamp(1.4rem,3vw,2rem);font-weight:800;color:white;line-height:1.2;margin-bottom:14px">{{ blog.title }}</h1>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:rgba(255,255,255,.8);font-size:.85rem">
+            <img src="{{ blog.author.profile.get_avatar_url }}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.4)" alt="">
+            <span>{{ blog.author.get_full_name }}</span>
+            <span>·</span>
+            <span><i class="far fa-calendar me-1"></i>{{ blog.published_at|date:"F d, Y" }}</span>
+            <span>·</span>
+            <span><i class="fas fa-clock me-1"></i>{{ blog.read_time }}</span>
+            <span>·</span>
+            <span><i class="far fa-eye me-1"></i>{{ blog.views_count|intcomma }} views</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Post Content -->
+      <article class="post-content mb-5">
+        {% if blog.excerpt %}
+        <p style="font-size:1.1rem;font-weight:500;color:var(--text-secondary);border-left:3px solid var(--orange);padding-left:16px;margin-bottom:24px;font-style:italic">{{ blog.excerpt }}</p>
+        {% endif %}
+        {{ blog.content|safe }}
+      </article>
+
+      <!-- Tags -->
+      {% if blog.tags.all %}
+      <div class="d-flex flex-wrap gap-2 mb-4">
+        <span style="font-size:.82rem;font-weight:600;color:var(--text-muted);margin-right:4px"><i class="fas fa-tags me-1"></i>Tags:</span>
+        {% for tag in blog.tags.all %}
+        <a href="{% url 'blogs:list' %}?tag={{ tag.slug }}" class="tag-pill">#{{ tag.name }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Like + Share Row -->
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 py-4 border-top border-bottom" style="border-color:var(--gray-200)!important">
+        <div class="d-flex align-items-center gap-3">
+          <button class="like-btn {% if user_liked %}liked{% endif %}" data-blog-id="{{ blog.id }}">
+            <i class="{% if user_liked %}fas{% else %}far{% endif %} fa-heart like-icon"></i>
+            <span class="like-count">{{ blog.likes.count }}</span> Likes
+          </button>
+          {% if user.is_authenticated %}
+          <button class="bookmark-btn {% if user_bookmarked %}active{% endif %}" data-blog-id="{{ blog.id }}" style="background:var(--gray-100);border:none;border-radius:var(--radius-full);padding:10px 18px;font-size:.875rem;cursor:pointer;color:var(--text-secondary);transition:all .3s">
+            <i class="{% if user_bookmarked %}fas{% else %}far{% endif %} fa-bookmark me-2"></i>Save
+          </button>
+          {% endif %}
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span style="font-size:.82rem;color:var(--text-muted)">Share:</span>
+          <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="sticky-share-btn share-fb" style="width:34px;height:34px;font-size:.8rem"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ blog.title|urlencode }}" target="_blank" class="sticky-share-btn share-tw" style="width:34px;height:34px;font-size:.8rem"><i class="fab fa-twitter"></i></a>
+          <a href="https://wa.me/?text={{ blog.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}" target="_blank" class="sticky-share-btn share-wa" style="width:34px;height:34px;font-size:.8rem"><i class="fab fa-whatsapp"></i></a>
+          <button class="sticky-share-btn share-copy" style="width:34px;height:34px;font-size:.8rem" onclick="navigator.clipboard.writeText(window.location.href).then(()=>KVToast.show('Link copied!','success'))"><i class="fas fa-link"></i></button>
+        </div>
+      </div>
+
+      <!-- Author Bio -->
+      <div class="author-bio-card">
+        <img src="{{ blog.author.profile.get_avatar_url }}" class="author-bio-avatar" alt="{{ blog.author.get_full_name }}">
+        <div>
+          <a href="{% url 'accounts:profile' blog.author.username %}" class="author-bio-name">{{ blog.author.get_full_name }}</a>
+          <div class="author-bio-role">{{ blog.author.profile.title|default:"Writer" }}</div>
+          <p class="author-bio-text">{{ blog.author.profile.bio|default:"Passionate writer sharing ideas and knowledge with the world." }}</p>
+          <div class="d-flex gap-2 mt-3">
+            <a href="{% url 'accounts:profile' blog.author.username %}" class="btn-outline-orange">View Profile</a>
+            {% if user.is_authenticated and user != blog.author %}
+            <button class="btn-secondary-custom follow-btn" data-user="{{ blog.author.username }}" style="padding:9px 20px;font-size:.85rem">
+              <i class="fas fa-user-plus me-2"></i>Follow
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Related Posts -->
+      {% if related_blogs %}
+      <div class="related-section">
+        <h3 style="font-family:var(--font-head);font-size:1.1rem;font-weight:700;margin-bottom:20px"><i class="fas fa-layer-group me-2 text-orange"></i>Related Articles</h3>
+        <div class="row g-3">
+          {% for rb in related_blogs %}
+          <div class="col-md-4">
+            <a href="{{ rb.get_absolute_url }}" class="blog-card" style="height:auto">
+              <div class="blog-card-img" style="height:140px">
+                <img src="{{ rb.get_featured_image_url }}" alt="{{ rb.title }}" loading="lazy">
+                <div class="blog-card-overlay"></div>
+                <span class="blog-card-category">{{ rb.category.name|default:"Post" }}</span>
+              </div>
+              <div class="blog-card-body" style="padding:14px">
+                <span class="blog-card-title" style="font-size:.875rem">{{ rb.title|truncatechars:50 }}</span>
+                <span class="blog-card-date mt-2 d-block">{{ rb.published_at|date:"M d, Y" }}</span>
+              </div>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Comments -->
+      <div id="comments-section" class="mt-5">
+        <h3 style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;margin-bottom:24px">
+          <i class="fas fa-comments me-2 text-orange"></i>Comments <span style="color:var(--text-muted);font-size:.9rem">({{ comments.count }})</span>
+        </h3>
+
+        {% if user.is_authenticated %}
+        <div class="comment-form-card mb-4">
+          <form method="post" action="{% url 'comments:add' blog.slug %}" class="comment-ajax-form" data-blog="{{ blog.id }}">
+            {% csrf_token %}
+            <div class="d-flex gap-3 align-items-start">
+              <img src="{{ user.profile.get_avatar_url }}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--orange)" alt="">
+              <div class="flex-grow-1">
+                <textarea name="content" class="form-control mb-3" rows="3" placeholder="Share your thoughts..." required style="resize:none"></textarea>
+                <button type="submit" class="btn-primary-custom" style="padding:9px 22px;font-size:.875rem"><i class="fas fa-paper-plane me-2"></i>Post Comment</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        {% else %}
+        <div class="comment-form-card mb-4 text-center">
+          <i class="fas fa-comment-alt" style="font-size:2rem;color:var(--gray-300);margin-bottom:12px;display:block"></i>
+          <p class="text-muted mb-3">Please login to leave a comment</p>
+          <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn-primary-custom" style="padding:9px 22px;font-size:.875rem">Login to Comment</a>
+        </div>
+        {% endif %}
+
+        {% for comment in comments %}
+        {% if not comment.parent %}
+        <div class="comment-card">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <img src="{{ comment.author.profile.get_avatar_url }}" class="comment-avatar" alt="{{ comment.author.get_full_name }}">
+            <div>
+              <div class="comment-author">{{ comment.author.get_full_name|default:comment.author.username }}</div>
+              <div class="comment-time">{{ comment.created_at|timesince }} ago</div>
+            </div>
+            {% if user.is_authenticated %}
+            <button class="comment-reply-btn ms-auto" data-comment-id="{{ comment.id }}"><i class="fas fa-reply me-1"></i>Reply</button>
+            {% endif %}
+          </div>
+          <p class="comment-text">{{ comment.content }}</p>
+
+          <!-- Reply form -->
+          <div id="reply-form-{{ comment.id }}" style="display:none;margin-top:12px">
+            <form method="post" action="{% url 'comments:add' blog.slug %}" class="comment-ajax-form">
+              {% csrf_token %}
+              <input type="hidden" name="parent_id" value="{{ comment.id }}">
+              <div class="d-flex gap-2">
+                <textarea name="content" class="form-control" rows="2" placeholder="Write a reply..." required style="resize:none;font-size:.875rem"></textarea>
+                <button type="submit" class="btn-primary-custom" style="padding:8px 16px;font-size:.8rem;white-space:nowrap">Reply</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Nested replies -->
+          {% for reply in comment.replies.all %}
+          <div class="comment-card ms-4 mt-3" style="background:var(--gray-50)">
+            <div class="d-flex align-items-center gap-3 mb-2">
+              <img src="{{ reply.author.profile.get_avatar_url }}" class="comment-avatar" alt="">
+              <div>
+                <div class="comment-author">{{ reply.author.get_full_name }}</div>
+                <div class="comment-time">{{ reply.created_at|timesince }} ago</div>
+              </div>
+            </div>
+            <p class="comment-text">{{ reply.content }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% empty %}
+        <div class="text-center py-4">
+          <i class="far fa-comment-dots" style="font-size:2.5rem;color:var(--gray-300);display:block;margin-bottom:10px"></i>
+          <p class="text-muted">No comments yet. Be the first to share your thoughts!</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div style="position:sticky;top:calc(var(--navbar-h) + 20px)">
+        <!-- Author Widget -->
+        <div class="sidebar-widget">
+          <h3 class="widget-title"><i class="fas fa-user"></i> About the Author</h3>
+          <div class="text-center">
+            <img src="{{ blog.author.profile.get_avatar_url }}" style="width:70px;height:70px;border-radius:50%;object-fit:cover;border:3px solid var(--orange);margin-bottom:12px" alt="{{ blog.author.get_full_name }}">
+            <a href="{% url 'accounts:profile' blog.author.username %}" style="font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--text-primary);text-decoration:none;display:block;margin-bottom:4px">{{ blog.author.get_full_name }}</a>
+            <div style="font-size:.78rem;color:var(--orange);font-weight:600;margin-bottom:8px">{{ blog.author.profile.title|default:"Writer" }}</div>
+            <p style="font-size:.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:14px">{{ blog.author.profile.bio|default:"Passionate writer sharing ideas."|truncatechars:100 }}</p>
+            <a href="{% url 'accounts:profile' blog.author.username %}" class="btn-outline-orange" style="padding:7px 18px;font-size:.82rem">View Profile</a>
+          </div>
+        </div>
+
+        <!-- Popular Posts -->
+        <div class="sidebar-widget">
+          <h3 class="widget-title"><i class="fas fa-fire"></i> Popular Posts</h3>
+          {% for p in popular_blogs %}
+          <a href="{{ p.get_absolute_url }}" class="popular-post">
+            <img src="{{ p.get_featured_image_url }}" class="popular-post-img" alt="{{ p.title }}">
+            <div>
+              <div class="popular-post-title">{{ p.title|truncatechars:50 }}</div>
+              <div class="popular-post-meta"><i class="far fa-eye me-1"></i>{{ p.views_count|default:0|intcomma }} · {{ p.published_at|date:"M d" }}</div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+
+        <!-- Tags -->
+        <div class="sidebar-widget">
+          <h3 class="widget-title"><i class="fas fa-tags"></i> Tags</h3>
+          <div class="d-flex flex-wrap gap-2">
+            {% for tag in popular_tags %}
+            <a href="{% url 'blogs:list' %}?tag={{ tag.slug }}" class="tag-pill">#{{ tag.name }}</a>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Share Widget -->
+        <div class="sidebar-widget" style="background:var(--orange-pale);border-color:rgba(255,107,53,.15)">
+          <h3 class="widget-title" style="border-color:var(--orange)"><i class="fas fa-share-alt"></i> Share Article</h3>
+          <div class="d-flex gap-2 flex-wrap">
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="sticky-share-btn share-fb" style="border-radius:var(--radius-sm);width:auto;padding:8px 14px;font-size:.82rem;gap:6px;display:flex;align-items:center"><i class="fab fa-facebook-f"></i> Facebook</a>
+            <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ blog.title|urlencode }}" target="_blank" class="sticky-share-btn share-tw" style="border-radius:var(--radius-sm);width:auto;padding:8px 14px;font-size:.82rem;gap:6px;display:flex;align-items:center"><i class="fab fa-twitter"></i> Twitter</a>
+            <a href="https://wa.me/?text={{ blog.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}" target="_blank" class="sticky-share-btn share-wa" style="border-radius:var(--radius-sm);width:auto;padding:8px 14px;font-size:.82rem;gap:6px;display:flex;align-items:center"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

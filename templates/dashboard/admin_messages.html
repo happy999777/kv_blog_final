@@ -1,0 +1,39 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load humanize %}
+{% block title %}Contact Messages — KV Blog{% endblock %}
+{% block topbar_title %}Messages{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-page-title">Contact Messages</div>
+<p class="dashboard-page-subtitle">Messages sent via the contact form.</p>
+<div class="dashboard-table">
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for msg in messages_list %}
+        <tr>
+          <td style="font-weight:600;font-size:.875rem">{{ msg.name }}</td>
+          <td style="font-size:.875rem;color:var(--text-secondary)">{{ msg.email }}</td>
+          <td style="font-size:.875rem">{{ msg.subject|truncatechars:40 }}</td>
+          <td style="font-size:.82rem;color:var(--text-muted)">{{ msg.created_at|date:"M d, Y" }}</td>
+          <td><span class="status-badge {% if msg.status == 'new' %}status-pending{% else %}status-approved{% endif %}">{{ msg.status|title }}</span></td>
+          <td>
+            <button class="action-btn action-btn-view" onclick="document.getElementById('msg-{{ msg.id }}').style.display='block'" title="View"><i class="fas fa-eye"></i></button>
+          </td>
+        </tr>
+        <tr id="msg-{{ msg.id }}" style="display:none">
+          <td colspan="6">
+            <div class="p-3 rounded-3" style="background:var(--gray-50);border:1px solid var(--border)">
+              <p style="font-size:.875rem;color:var(--text-secondary);margin:0">{{ msg.message }}</p>
+              <div class="mt-2"><a href="mailto:{{ msg.email }}" class="btn-outline-orange" style="padding:6px 14px;font-size:.8rem"><i class="fas fa-reply me-1"></i>Reply</a></div>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-5 text-muted">No messages yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ author.get_full_name }} — BlogPlatform{% endblock %}
+
+{% block content %}
+<!-- Author Hero -->
+<div class="author-profile-hero">
+    <div class="author-hero-bg"></div>
+    <div class="container-xl">
+        <div class="author-hero-content" data-aos="fade-up">
+            <img src="{{ author.profile.get_avatar_url }}" alt="{{ author.get_full_name }}" class="author-hero-avatar">
+            <div class="author-hero-info">
+                <h1 class="author-hero-name">{{ author.get_full_name }}</h1>
+                <p class="author-hero-username">@{{ author.username }}</p>
+                <p class="author-hero-bio">{{ author.profile.bio|default:"Writer and content creator." }}</p>
+                <div class="author-hero-meta">
+                    {% if author.profile.location %}
+                    <span><i class="fas fa-map-marker-alt me-1"></i>{{ author.profile.location }}</span>
+                    {% endif %}
+                    {% if author.profile.website %}
+                    <a href="{{ author.profile.website }}" target="_blank"><i class="fas fa-globe me-1"></i>Website</a>
+                    {% endif %}
+                    <span class="role-badge {{ author.role }}">{{ author.get_role_display }}</span>
+                </div>
+                <div class="author-hero-stats">
+                    <div class="author-stat"><strong>{{ blog_count }}</strong><span>Articles</span></div>
+                    <div class="author-stat"><strong>{{ author.profile.total_views|intcomma }}</strong><span>Total Views</span></div>
+                </div>
+                <div class="author-social">
+                    {% if author.profile.twitter %}
+                    <a href="{{ author.profile.twitter }}" target="_blank" class="social-link"><i class="fab fa-twitter"></i></a>
+                    {% endif %}
+                    {% if author.profile.linkedin %}
+                    <a href="{{ author.profile.linkedin }}" target="_blank" class="social-link"><i class="fab fa-linkedin"></i></a>
+                    {% endif %}
+                    {% if author.profile.github %}
+                    <a href="{{ author.profile.github }}" target="_blank" class="social-link"><i class="fab fa-github"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Author Blogs -->
+<div class="container-xl py-5">
+    <h2 class="section-title mb-4" data-aos="fade-up">Articles by {{ author.first_name }}</h2>
+    {% if blogs %}
+    <div class="row g-4">
+        {% for blog in blogs %}
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'0' }}50">
+            <article class="blog-card">
+                <div class="blog-card-img">
+                    <a href="{{ blog.get_absolute_url }}">
+                        <img src="{{ blog.get_featured_image_url }}" alt="{{ blog.title }}" loading="lazy">
+                    </a>
+                    {% if blog.category %}
+                    <a href="{{ blog.category.get_absolute_url }}" class="blog-card-cat" style="background: {{ blog.category.color }}">
+                        {{ blog.category.name }}
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="blog-card-body">
+                    <h3 class="blog-card-title">
+                        <a href="{{ blog.get_absolute_url }}">{{ blog.title|truncatechars:75 }}</a>
+                    </h3>
+                    <p class="blog-card-excerpt">{{ blog.excerpt|truncatechars:120 }}</p>
+                    <div class="blog-card-footer">
+                        <div class="blog-card-stats">
+                            <span><i class="fas fa-eye"></i> {{ blog.views_count|intcomma }}</span>
+                            <span><i class="fas fa-heart"></i> {{ blog.likes_count }}</span>
+                        </div>
+                        <span class="read-time-badge">{{ blog.read_time }}</span>
+                    </div>
+                </div>
+            </article>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-results text-center py-5">
+        <p class="text-muted">No published articles yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.author-profile-hero { padding: 5rem 0 3rem; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+.author-hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(108,99,255,0.05) 0%, transparent 60%); }
+.author-hero-content { position: relative; z-index: 1; display: flex; gap: 2.5rem; align-items: flex-start; flex-wrap: wrap; }
+.author-hero-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--border); flex-shrink: 0; }
+.author-hero-name { font-size: 2rem; letter-spacing: -1px; margin-bottom: 0.25rem; }
+.author-hero-username { color: var(--text-muted); margin-bottom: 0.75rem; }
+.author-hero-bio { color: var(--text-muted); max-width: 500px; margin-bottom: 1rem; }
+.author-hero-meta { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-muted); }
+.author-hero-meta a { color: var(--text-muted); }
+.author-hero-meta a:hover { color: var(--primary); }
+.author-hero-stats { display: flex; gap: 2rem; margin-bottom: 1.25rem; }
+.author-stat { display: flex; flex-direction: column; }
+.author-stat strong { font-size: 1.5rem; font-family: var(--font-display); letter-spacing: -0.5px; }
+.author-stat span { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.author-social { display: flex; gap: 0.75rem; }
+</style>
+{% endblock %}

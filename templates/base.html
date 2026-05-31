@@ -1,0 +1,229 @@
+{% load static %}{% load humanize %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#FF6B35">
+<title>{% block title %}KV Blog — Where Ideas Take Flight{% endblock %}</title>
+<meta name="description" content="{% block meta_desc %}KV Blog — curated articles from brilliant minds. Discover, learn, and share.{% endblock %}">
+<meta name="keywords" content="{% block meta_keywords %}blog, articles, writing, knowledge{% endblock %}">
+<meta property="og:title" content="{% block og_title %}KV Blog{% endblock %}">
+<meta property="og:description" content="{% block og_desc %}Premium blogging platform{% endblock %}">
+<meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}{% endblock %}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="{% block canonical %}{{ request.build_absolute_uri }}{% endblock %}">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="{% static 'css/style.css' %}" rel="stylesheet">
+{% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+<!-- Page Loader -->
+<div id="page-loader">
+  <div class="loader-inner">
+    <div class="loader-logo">KV</div>
+    <div class="loader-bar"><div class="loader-fill"></div></div>
+  </div>
+</div>
+
+<!-- Reading Progress -->
+<div id="readingProgress"><div id="readingProgressBar"></div></div>
+
+<!-- Django Messages as Toast Data -->
+{% if messages %}{% for msg in messages %}
+<div data-toast="{{ msg }}" data-toast-type="{% if msg.tags == 'error' %}error{% elif msg.tags == 'success' %}success{% elif msg.tags == 'warning' %}warning{% else %}info{% endif %}" style="display:none"></div>
+{% endfor %}{% endif %}
+
+{% block navbar %}
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
+  <div class="container-xl">
+    <a class="navbar-brand" href="{% url 'core:home' %}">
+      <span class="brand-kv">KV</span><span style="font-size:.9rem;font-weight:600;color:var(--text-muted);margin-left:-2px">Blog</span>
+    </a>
+
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="{% url 'core:home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'blogs:list' %}">Blog</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Categories</a>
+          <ul class="dropdown-menu">
+            {% for cat in nav_categories %}
+            <li><a class="dropdown-item" href="{{ cat.get_absolute_url }}">
+              <i class="{{ cat.icon|default:'fa fa-folder' }} me-2 text-orange" style="width:16px"></i>{{ cat.name }}
+            </a></li>
+            {% empty %}
+            <li><a class="dropdown-item" href="{% url 'blogs:list' %}">All Posts</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'contact:contact' %}">Contact</a></li>
+      </ul>
+
+      <div class="d-flex align-items-center gap-3">
+        <!-- Search -->
+        <div class="nav-search-wrap d-none d-lg-flex">
+          <input type="text" id="navSearchInput" class="nav-search-input" placeholder="Search posts...">
+          <button class="nav-search-btn"><i class="fas fa-search"></i></button>
+          <div id="searchSuggestions"></div>
+        </div>
+
+        {% if user.is_authenticated %}
+        <!-- Notifications -->
+        <a href="{% url 'notifications:list' %}" class="nav-bell">
+          <i class="fas fa-bell"></i>
+          {% if unread_notification_count > 0 %}<span class="nav-bell-badge"></span>{% endif %}
+        </a>
+        <!-- User Dropdown -->
+        <div class="dropdown">
+          <button class="btn p-0 border-0 bg-transparent d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <img src="{{ user.profile.get_avatar_url }}" class="nav-avatar" alt="{{ user.username }}">
+            <i class="fas fa-chevron-down" style="font-size:.65rem;color:var(--text-muted)"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><h6 class="dropdown-header">{{ user.get_full_name|default:user.username }}</h6></li>
+            <li><a class="dropdown-item" href="{% url 'dashboard:home' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+            <li><a class="dropdown-item" href="{% url 'blogs:create' %}"><i class="fas fa-pen me-2"></i>Write Post</a></li>
+            <li><a class="dropdown-item" href="{% url 'accounts:profile' user.username %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+            {% if user.is_staff or user.is_superuser %}<li><a class="dropdown-item" href="{% url 'dashboard:admin_home' %}"><i class="fas fa-shield me-2"></i>Admin Dashboard</a></li>{% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+        {% else %}
+        <a href="{% url 'accounts:login' %}" class="btn-secondary-custom" style="padding:8px 18px">Login</a>
+        <a href="{% url 'blogs:create' %}" class="nav-link btn-write">Write</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+{% endblock navbar %}
+
+<!-- Main Content -->
+<main id="main-content" style="padding-top:var(--navbar-h)">
+  {% block content %}{% endblock %}
+</main>
+
+{% block footer %}
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container-xl">
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <a href="{% url 'core:home' %}" class="footer-brand">
+          <span class="kv-logo">KV</span>Blog
+        </a>
+        <p class="footer-desc">A premium blogging platform where brilliant ideas come alive. Read, write, and inspire the world.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-2">
+        <h6 class="footer-heading">Quick Links</h6>
+        <ul class="footer-links">
+          <li><a href="{% url 'core:home' %}">Home</a></li>
+          <li><a href="{% url 'blogs:list' %}">Blog</a></li>
+          <li><a href="{% url 'core:about' %}">About Us</a></li>
+          <li><a href="{% url 'contact:contact' %}">Contact</a></li>
+          <li><a href="{% url 'core:sitemap' %}">Sitemap</a></li>
+        </ul>
+      </div>
+      <div class="col-sm-6 col-lg-2">
+        <h6 class="footer-heading">Legal</h6>
+        <ul class="footer-links">
+          <li><a href="{% url 'core:privacy' %}">Privacy Policy</a></li>
+          <li><a href="{% url 'core:terms' %}">Terms of Service</a></li>
+          <li><a href="{% url 'core:about' %}">About</a></li>
+          {% if user.is_authenticated %}
+          <li><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+          {% else %}
+          <li><a href="{% url 'accounts:register' %}">Register</a></li>
+          {% endif %}
+        </ul>
+      </div>
+      <div class="col-lg-4">
+        <h6 class="footer-heading">Newsletter</h6>
+        <p style="font-size:.875rem;color:rgba(255,255,255,.55);margin-bottom:16px">Get the best articles delivered to your inbox weekly.</p>
+        <form method="post" action="{% url 'core:newsletter_subscribe' %}" class="d-flex gap-2">
+          {% csrf_token %}
+          <input type="email" name="email" placeholder="your@email.com" required
+            style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:var(--radius-full);padding:9px 16px;color:var(--white);font-size:.85rem;outline:none">
+          <button type="submit" class="btn-primary-custom" style="padding:9px 20px;font-size:.85rem">Subscribe</button>
+        </form>
+        <div class="footer-tags mt-4">
+          {% for cat in footer_categories %}
+          <a href="{{ cat.get_absolute_url }}" class="footer-tag">{{ cat.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <hr class="footer-divider">
+    <div class="footer-bottom">
+      <span>&copy; {% now "Y" %} <a href="{% url 'core:home' %}">KV Blog</a>. All rights reserved.</span>
+      <span>Made with <span style="color:var(--orange)">♥</span> for writers everywhere</span>
+      <div class="d-flex gap-3">
+        <a href="{% url 'core:privacy' %}">Privacy</a>
+        <a href="{% url 'core:terms' %}">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+{% endblock footer %}
+
+<!-- Mobile Bottom Nav -->
+<nav class="mobile-bottom-nav">
+  <div class="mobile-nav-items">
+    <a href="{% url 'core:home' %}" class="mobile-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+    <a href="{% url 'blogs:list' %}" class="mobile-nav-item"><i class="fas fa-newspaper"></i><span>Blog</span></a>
+    <a href="{% url 'blogs:create' %}" class="mobile-nav-item cta"><i class="fas fa-pen"></i><span>Write</span></a>
+    {% if user.is_authenticated %}<a href="{% url 'accounts:profile' user.username %}" class="mobile-nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
+    <a href="{% url 'dashboard:home' %}" class="mobile-nav-item"><i class="fas fa-grid-2"></i><span>Dashboard</span></a>{% else %}<a href="{% url 'accounts:login' %}" class="mobile-nav-item"><i class="fas fa-user"></i><span>Login</span></a>{% endif %}
+  </div>
+</nav>
+
+<!-- Toast Container -->
+<div id="toastContainer"></div>
+
+<!-- Newsletter Popup -->
+{% if not user.is_authenticated %}
+<div id="newsletterPopup">
+  <div class="popup-card">
+    <button class="popup-close"><i class="fas fa-times"></i></button>
+    <div class="popup-icon"><i class="fas fa-envelope-open-text"></i></div>
+    <h3 class="auth-title mb-2">Never Miss a Post</h3>
+    <p class="auth-subtitle">Join 10,000+ readers who get the best articles in their inbox weekly.</p>
+    <form>
+      <input type="email" class="form-control mb-3" placeholder="Enter your email..." required>
+      <button type="submit" class="btn-primary-custom w-100 justify-content-center">
+        <i class="fas fa-paper-plane"></i> Subscribe Free
+      </button>
+    </form>
+    <p class="text-center mt-3" style="font-size:.78rem;color:var(--text-muted)">No spam. Unsubscribe anytime.</p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

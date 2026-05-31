@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}{% load humanize %}
+{% block title %}Blog — KV Blog{% endblock %}
+{% block content %}
+
+<div class="blog-list-header">
+  <div class="container-xl">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <span class="section-eyebrow">Discover Stories</span>
+        <h1 class="section-title mb-3">All Articles</h1>
+        <div class="search-bar-wrap">
+          <form method="get">
+            <input type="text" name="q" value="{{ request.GET.q }}" class="search-bar-input" placeholder="Search articles, authors, topics...">
+            <button type="submit" class="search-bar-btn"><i class="fas fa-search"></i></button>
+          </form>
+        </div>
+        <div class="filter-chips">
+          <a href="{% url 'blogs:list' %}" class="filter-chip {% if not request.GET.category and not request.GET.sort %}active{% endif %}">All</a>
+          {% for cat in categories %}
+          <a href="?category={{ cat.slug }}" class="filter-chip {% if request.GET.category == cat.slug %}active{% endif %}">{{ cat.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-lg-6 text-lg-end">
+        <a href="{% url 'blogs:create' %}" class="btn-primary-custom"><i class="fas fa-pen"></i> Write Article</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-xl pb-5">
+  <div class="row g-5">
+    <!-- Main Grid -->
+    <div class="col-lg-8">
+      <div class="sort-bar">
+        <span style="font-size:.85rem;color:var(--text-muted)">
+          {% if page_obj.paginator.count %}{{ page_obj.paginator.count }} article{{ page_obj.paginator.count|pluralize }}{% if request.GET.q %} for "{{ request.GET.q }}"{% endif %}{% endif %}
+        </span>
+        <div class="d-flex align-items-center gap-2">
+          <span style="font-size:.82rem;color:var(--text-muted)">Sort:</span>
+          <select onchange="location.href='?'+new URLSearchParams({...Object.fromEntries(new URLSearchParams(location.search)),...{sort:this.value}}).toString()">
+            <option value="latest" {% if request.GET.sort == 'latest' or not request.GET.sort %}selected{% endif %}>Latest</option>
+            <option value="popular" {% if request.GET.sort == 'popular' %}selected{% endif %}>Most Popular</option>
+            <option value="trending" {% if request.GET.sort == 'trending' %}selected{% endif %}>Trending</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g-4" id="blog-grid">
+        {% for blog in page_obj %}
+        <div class="col-md-6 fade-up" style="transition-delay:{{ forloop.counter0 }}00ms">
+          <a href="{{ blog.get_absolute_url }}" class="blog-card">
+            <div class="blog-card-img">
+              <img src="{{ blog.get_featured_image_url }}" alt="{{ blog.title }}" loading="lazy">
+              <div class="blog-card-overlay"></div>
+              <span class="blog-card-category">{{ blog.category.name|default:"General" }}</span>
+              <span class="blog-card-read-time"><i class="fas fa-clock me-1"></i>{{ blog.read_time }}</span>
+            </div>
+            <div class="blog-card-body">
+              <span class="blog-card-title">{{ blog.title|truncatechars:65 }}</span>
+              <p class="blog-card-excerpt">{{ blog.excerpt|default:blog.content|striptags|truncatechars:100 }}</p>
+              <div class="blog-card-footer">
+                <div class="blog-card-author">
+                  <img src="{{ blog.author.profile.get_avatar_url }}" alt="{{ blog.author.get_full_name }}">
+                  <div>
+                    <div class="blog-card-author-name">{{ blog.author.get_full_name|truncatechars:18 }}</div>
+                    <div class="blog-card-date">{{ blog.published_at|date:"M d, Y" }}</div>
+                  </div>
+                </div>
+                <div class="blog-card-stats">
+                  <span class="blog-stat-item"><i class="far fa-eye"></i> {{ blog.views_count|default:0|intcomma }}</span>
+                  <span class="blog-stat-item"><i class="far fa-heart"></i> {{ blog.likes.count }}</span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+          <i class="fas fa-search" style="font-size:3rem;color:var(--gray-300);display:block;margin-bottom:16px"></i>
+          <h4>No articles found</h4>
+          <p class="text-muted mb-4">{% if request.GET.q %}No results for "{{ request.GET.q }}"{% else %}Be the first to write!{% endif %}</p>
+          <a href="{% url 'blogs:create' %}" class="btn-primary-custom">Write First Article</a>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if page_obj.has_other_pages %}
+      <div class="pagination-wrap">
+        <nav><ul class="pagination">
+          {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a></li>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+          {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a></li>
+          {% endif %}
+        </ul></nav>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="sidebar-widget">
+        <h3 class="widget-title"><i class="fas fa-fire"></i> Popular Posts</h3>
+        {% for blog in popular_blogs %}
+        <a href="{{ blog.get_absolute_url }}" class="popular-post">
+          <img src="{{ blog.get_featured_image_url }}" class="popular-post-img" alt="{{ blog.title }}">
+          <div>
+            <div class="popular-post-title">{{ blog.title|truncatechars:55 }}</div>
+            <div class="popular-post-meta"><i class="far fa-eye me-1"></i>{{ blog.views_count|default:0|intcomma }} views · {{ blog.published_at|date:"M d" }}</div>
+          </div>
+        </a>
+        {% empty %}
+        <p class="text-muted small">No popular posts yet.</p>
+        {% endfor %}
+      </div>
+
+      <div class="sidebar-widget">
+        <h3 class="widget-title"><i class="fas fa-tags"></i> Trending Tags</h3>
+        <div class="d-flex flex-wrap gap-2">
+          {% for tag in popular_tags %}
+          <a href="{% url 'blogs:list' %}?tag={{ tag.slug }}" class="tag-pill"># {{ tag.name }} <span class="ms-1" style="opacity:.6">({{ tag.post_count }})</span></a>
+          {% empty %}
+          <p class="text-muted small">No tags yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="sidebar-widget">
+        <h3 class="widget-title"><i class="fas fa-folder"></i> Categories</h3>
+        {% for cat in categories %}
+        <a href="{{ cat.get_absolute_url }}" class="d-flex justify-content-between align-items-center py-2 border-bottom text-decoration-none" style="color:var(--text-secondary);border-color:var(--gray-100)!important;transition:color .15s">
+          <span style="font-size:.875rem;font-weight:500"><i class="{{ cat.icon|default:'fas fa-folder' }} me-2 text-orange"></i>{{ cat.name }}</span>
+          <span class="badge rounded-pill" style="background:var(--orange-pale);color:var(--orange);font-size:.72rem">{{ cat.blog_count }}</span>
+        </a>
+        {% endfor %}
+      </div>
+
+      <!-- Newsletter widget -->
+      <div class="sidebar-widget" style="background:linear-gradient(135deg,var(--orange),var(--orange-dark));border:none">
+        <h3 class="widget-title" style="color:white;border-color:rgba(255,255,255,.3)"><i class="fas fa-envelope"></i> Newsletter</h3>
+        <p style="font-size:.85rem;color:rgba(255,255,255,.85);margin-bottom:14px">Get weekly articles in your inbox.</p>
+        <form method="post" action="{% url 'core:newsletter_subscribe' %}">
+          {% csrf_token %}
+          <input type="email" name="email" placeholder="your@email.com" required style="width:100%;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--radius-md);padding:9px 14px;color:white;font-size:.85rem;outline:none;margin-bottom:8px">
+          <button type="submit" style="width:100%;background:white;color:var(--orange-dark);border:none;border-radius:var(--radius-md);padding:9px;font-weight:700;font-size:.85rem;cursor:pointer">Subscribe</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Contact Us — KV Blog{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container-xl">
+    <span class="section-eyebrow">Get In Touch</span>
+    <h1 class="page-hero-title">Contact <span>Us</span></h1>
+    <p class="section-subtitle">Have a question, suggestion, or just want to say hello? We'd love to hear from you.</p>
+  </div>
+</div>
+<div class="container-xl py-5">
+  <div class="row g-5">
+    <div class="col-lg-4">
+      <div class="contact-info-card">
+        <h3 style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;margin-bottom:24px">Get in Touch</h3>
+        <div class="contact-info-item">
+          <div class="contact-info-icon"><i class="fas fa-envelope"></i></div>
+          <div><h5>Email</h5><p>hello@kvblog.com</p></div>
+        </div>
+        <div class="contact-info-item">
+          <div class="contact-info-icon"><i class="fas fa-map-marker-alt"></i></div>
+          <div><h5>Location</h5><p>Available Worldwide</p></div>
+        </div>
+        <div class="contact-info-item">
+          <div class="contact-info-icon"><i class="fas fa-clock"></i></div>
+          <div><h5>Response Time</h5><p>Within 24 hours</p></div>
+        </div>
+        <div class="mt-4 pt-4" style="border-top:1px solid rgba(255,255,255,.2)">
+          <p style="font-size:.85rem;opacity:.8;margin-bottom:12px">Follow us</p>
+          <div style="display:flex;gap:10px">
+            <a href="#" style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;text-decoration:none"><i class="fab fa-twitter"></i></a>
+            <a href="#" style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;text-decoration:none"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;text-decoration:none"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="contact-form-card">
+        <h3 style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;margin-bottom:24px">Send a Message</h3>
+        {% if messages %}{% for msg in messages %}<div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}success{% endif %} rounded-3 mb-3">{{ msg }}</div>{% endfor %}{% endif %}
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Your Name</label>
+              {{ form.name }}
+              {% if form.name.errors %}<div class="text-danger mt-1" style="font-size:.82rem">{{ form.name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email Address</label>
+              {{ form.email }}
+              {% if form.email.errors %}<div class="text-danger mt-1" style="font-size:.82rem">{{ form.email.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Subject</label>
+              {{ form.subject }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Message</label>
+              {{ form.message }}
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-paper-plane me-2"></i>Send Message
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

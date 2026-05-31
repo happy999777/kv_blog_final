@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Register — KV Blog{% endblock %}
+{% block content %}
+<section class="auth-section">
+  <div class="container">
+    <div class="auth-card" style="max-width:520px">
+      <div class="auth-logo"><span class="kv-logo" style="font-size:2.5rem">KV</span></div>
+      <h1 class="auth-title">Join KV Blog</h1>
+      <p class="auth-subtitle">Create your account and start writing today</p>
+
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger rounded-3 mb-3" style="font-size:.875rem">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label">First Name</label>
+            <input type="text" name="first_name" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+              placeholder="John" value="{{ form.first_name.value|default:'' }}" required>
+            {% if form.first_name.errors %}<div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-6">
+            <label class="form-label">Last Name</label>
+            <input type="text" name="last_name" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+              placeholder="Doe" value="{{ form.last_name.value|default:'' }}" required>
+            {% if form.last_name.errors %}<div class="invalid-feedback">{{ form.last_name.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Username</label>
+            <div class="input-icon-wrap">
+              <i class="fas fa-at input-icon"></i>
+              <input type="text" name="username" class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                placeholder="johndoe" value="{{ form.username.value|default:'' }}" required>
+            </div>
+            {% if form.username.errors %}<div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Email Address</label>
+            <div class="input-icon-wrap">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" name="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                placeholder="john@example.com" value="{{ form.email.value|default:'' }}" required>
+            </div>
+            {% if form.email.errors %}<div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Password</label>
+            <div class="input-icon-wrap" style="position:relative">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" name="password1" class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                placeholder="Create a strong password" required style="padding-right:42px">
+              <button type="button" class="password-toggle"><i class="fas fa-eye"></i></button>
+            </div>
+            {% if form.password1.errors %}<div class="invalid-feedback d-block">{{ form.password1.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Confirm Password</label>
+            <div class="input-icon-wrap" style="position:relative">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" name="password2" class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                placeholder="Confirm your password" required style="padding-right:42px">
+              <button type="button" class="password-toggle"><i class="fas fa-eye"></i></button>
+            </div>
+            {% if form.password2.errors %}<div class="invalid-feedback d-block">{{ form.password2.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="terms" id="terms" required>
+              <label class="form-check-label" for="terms" style="font-size:.875rem;color:var(--text-secondary)">
+                I agree to the <a href="{% url 'core:terms' %}" class="auth-link">Terms of Service</a> and <a href="{% url 'core:privacy' %}" class="auth-link">Privacy Policy</a>
+              </label>
+            </div>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn-primary-custom w-100 justify-content-center" style="font-size:.95rem;padding:13px">
+              <i class="fas fa-user-plus me-2"></i>Create Account
+            </button>
+          </div>
+        </div>
+      </form>
+      <div class="auth-divider">or</div>
+      <p class="text-center" style="font-size:.875rem;color:var(--text-secondary)">
+        Already have an account? <a href="{% url 'accounts:login' %}" class="auth-link">Sign in</a>
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}
