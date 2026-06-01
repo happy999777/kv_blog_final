@@ -196,20 +196,32 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ── Like Button ─────────────────────────────────────────── */
 document.querySelectorAll('.like-btn').forEach(btn => {
   btn.addEventListener('click', async () => {
-    const blogId = btn.dataset.blogId;
-    if (!blogId) return;
+    const identifier = btn.dataset.blogId || btn.dataset.slug;
+    if (!identifier) return;
+
     try {
-      const r = await fetch(`/blogs/${blogId}/like/`, {
+      const r = await fetch(`/blogs/${identifier}/like/`, {
         method: 'POST',
-        headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' }
+        credentials: 'same-origin',
+        headers: {
+          'X-CSRFToken': getCsrf(),
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({})
       });
-      const data = await r.json();
-      if (data.status) {
-        btn.classList.toggle('liked', data.status === 'liked');
-        const countEl = btn.querySelector('.like-count');
-        if (countEl) countEl.textContent = data.count;
+
+      const data = await (r.headers.get('content-type')?.includes('application/json') ? r.json() : Promise.resolve({}));
+      if (!r.ok) {
+        throw new Error(data.error || 'Please login to like posts');
       }
-    } catch(e) { KVToast.show('Please login to like posts', 'warning'); }
+
+      btn.classList.toggle('liked', data.liked === true);
+      const countEl = btn.querySelector('.like-count');
+      if (countEl && typeof data.count !== 'undefined') countEl.textContent = data.count;
+    } catch (error) {
+      KVToast.show(error.message || 'Please login to like posts', 'warning');
+    }
   });
 });
 
@@ -243,23 +255,42 @@ document.querySelectorAll('.share-copy').forEach(btn => {
 })();
 
 /* ── Bookmark Toggle ─────────────────────────────────────── */
-document.querySelectorAll('.bookmark-btn').forEach(btn => {
+document.querySelectorAll('.bookmark-btn, .bookmark-action-btn').forEach(btn => {
   btn.addEventListener('click', async () => {
-    const blogId = btn.dataset.blogId;
+    const identifier = btn.dataset.blogId || btn.dataset.slug;
+    if (!identifier) return;
+
     try {
-      const r = await fetch(`/blogs/${blogId}/bookmark/`, {
+      const r = await fetch(`/blogs/${identifier}/bookmark/`, {
         method: 'POST',
-        headers: { 'X-CSRFToken': getCsrf() }
+        credentials: 'same-origin',
+        headers: {
+          'X-CSRFToken': getCsrf(),
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({})
       });
-      const data = await r.json();
-      if (data.status) {
-        const isBookmarked = data.status === 'bookmarked';
-        btn.classList.toggle('active', isBookmarked);
-        btn.querySelector('i')?.classList.toggle('fas', isBookmarked);
-        btn.querySelector('i')?.classList.toggle('far', !isBookmarked);
-        KVToast.show(isBookmarked ? 'Bookmarked!' : 'Bookmark removed', 'success');
+
+      const data = await (r.headers.get('content-type')?.includes('application/json') ? r.json() : Promise.resolve({}));
+      if (!r.ok) {
+        throw new Error(data.error || 'Please login to bookmark');
       }
-    } catch(e) { KVToast.show('Please login to bookmark', 'warning'); }
+
+      const isBookmarked = data.bookmarked === true;
+      btn.classList.toggle('active', isBookmarked);
+      btn.classList.toggle('bookmarked', isBookmarked);
+      const icon = btn.querySelector('i');
+      if (icon) {
+        icon.classList.toggle('fas', isBookmarked);
+        icon.classList.toggle('far', !isBookmarked);
+      }
+      const textEl = btn.querySelector('span');
+      if (textEl) textEl.textContent = isBookmarked ? 'Saved' : 'Save';
+      KVToast.show(isBookmarked ? 'Bookmarked!' : 'Bookmark removed', 'success');
+    } catch (error) {
+      KVToast.show(error.message || 'Please login to bookmark', 'warning');
+    }
   });
 });
 
@@ -570,7 +601,8 @@ document.querySelectorAll('[data-copy]').forEach(el => {
 
 /* ── Helper: get CSRF token ──────────────────────────────── */
 function getCsrf() {
-  return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+  return document.querySelector('meta[name="csrf-token"]')?.content ||
+         document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
          document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1] || '';
 }
 
