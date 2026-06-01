@@ -66,15 +66,26 @@ class MyBlogsView(View):
 
     def get(self, request):
         status_filter = request.GET.get('status', 'all')
+        sort_by = request.GET.get('sort', 'date')  # date, views, likes
         blogs = Blog.objects.filter(author=request.user).select_related('category')
+        
         if status_filter != 'all':
             blogs = blogs.filter(status=status_filter)
-        blogs = blogs.order_by('-created_at')
+        
+        # Apply sorting based on the sort parameter
+        if sort_by == 'views':
+            blogs = blogs.order_by('-views_count')
+        elif sort_by == 'likes':
+            blogs = blogs.order_by('-likes_count')
+        else:  # default to date
+            blogs = blogs.order_by('-created_at')
+        
         paginator = Paginator(blogs, 10)
         page = paginator.get_page(request.GET.get('page', 1))
         return render(request, self.template_name, {
             'blogs': page,
             'status_filter': status_filter,
+            'sort_by': sort_by,
             'status_choices': [
                 ('all', 'All', Blog.objects.filter(author=request.user).count()),
                 ('draft', 'Draft', Blog.objects.filter(author=request.user, status='draft').count()),

@@ -74,11 +74,14 @@
 
       <div class="d-flex align-items-center gap-3">
         <!-- Search -->
-        <div class="nav-search-wrap d-none d-lg-flex">
-          <input type="text" id="navSearchInput" class="nav-search-input" placeholder="Search posts...">
-          <button class="nav-search-btn"><i class="fas fa-search"></i></button>
+        <form method="get" action="{% url 'blogs:list' %}" class="nav-search-wrap d-none d-lg-flex">
+          <input type="text" id="navSearchInput" name="q" value="{{ request.GET.q|default:'' }}" class="nav-search-input" placeholder="Search posts...">
+          {% if request.GET.category %}<input type="hidden" name="category" value="{{ request.GET.category }}">{% endif %}
+          {% if request.GET.tag %}<input type="hidden" name="tag" value="{{ request.GET.tag }}">{% endif %}
+          {% if request.GET.sort %}<input type="hidden" name="sort" value="{{ request.GET.sort }}">{% endif %}
+          <button type="submit" class="nav-search-btn"><i class="fas fa-search"></i></button>
           <div id="searchSuggestions"></div>
-        </div>
+        </form>
 
         {% if user.is_authenticated %}
         <!-- Notifications -->

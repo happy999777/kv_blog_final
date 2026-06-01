@@ -10,32 +10,40 @@
 <!-- Stat Cards -->
 <div class="row g-4 mb-4">
   <div class="col-xl-3 col-md-6">
-    <div class="stat-card" style="--card-bg:#FFF0EB;--card-icon-color:#FF6B35;--card-color:rgba(255,107,53,.1)">
-      <div class="stat-card-icon"><i class="fas fa-newspaper"></i></div>
-      <div class="stat-card-value">{{ stats.total|default:0|intcomma }}</div>
-      <div class="stat-card-label">Total Posts</div>
-    </div>
+    <a href="{% url 'dashboard:my_blogs' %}" class="stat-card-link" title="View all posts">
+      <div class="stat-card" style="--card-bg:#FFF0EB;--card-icon-color:#FF6B35;--card-color:rgba(255,107,53,.1)">
+        <div class="stat-card-icon"><i class="fas fa-newspaper"></i></div>
+        <div class="stat-card-value">{{ stats.total|default:0|intcomma }}</div>
+        <div class="stat-card-label">Total Posts</div>
+      </div>
+    </a>
   </div>
   <div class="col-xl-3 col-md-6">
-    <div class="stat-card" style="--card-bg:#EFF6FF;--card-icon-color:#3B82F6;--card-color:rgba(59,130,246,.1)">
-      <div class="stat-card-icon" style="background:#EFF6FF"><i class="fas fa-eye" style="color:#3B82F6"></i></div>
-      <div class="stat-card-value">{{ stats.total_views|default:0|intcomma }}</div>
-      <div class="stat-card-label">Total Views</div>
-    </div>
+    <a href="{% url 'dashboard:my_blogs' %}?sort=views" class="stat-card-link" title="View posts sorted by views">
+      <div class="stat-card" style="--card-bg:#EFF6FF;--card-icon-color:#3B82F6;--card-color:rgba(59,130,246,.1)">
+        <div class="stat-card-icon" style="background:#EFF6FF"><i class="fas fa-eye" style="color:#3B82F6"></i></div>
+        <div class="stat-card-value">{{ stats.total_views|default:0|intcomma }}</div>
+        <div class="stat-card-label">Total Views</div>
+      </div>
+    </a>
   </div>
   <div class="col-xl-3 col-md-6">
-    <div class="stat-card" style="--card-bg:#F0FDF4;--card-icon-color:#22C55E;--card-color:rgba(34,197,94,.1)">
-      <div class="stat-card-icon" style="background:#F0FDF4"><i class="fas fa-heart" style="color:#22C55E"></i></div>
-      <div class="stat-card-value">{{ stats.total_likes|default:0|intcomma }}</div>
-      <div class="stat-card-label">Total Likes</div>
-    </div>
+    <a href="{% url 'dashboard:my_blogs' %}?sort=likes" class="stat-card-link" title="View posts sorted by likes">
+      <div class="stat-card" style="--card-bg:#F0FDF4;--card-icon-color:#22C55E;--card-color:rgba(34,197,94,.1)">
+        <div class="stat-card-icon" style="background:#F0FDF4"><i class="fas fa-heart" style="color:#22C55E"></i></div>
+        <div class="stat-card-value">{{ stats.total_likes|default:0|intcomma }}</div>
+        <div class="stat-card-label">Total Likes</div>
+      </div>
+    </a>
   </div>
   <div class="col-xl-3 col-md-6">
-    <div class="stat-card" style="--card-bg:#FEF3C7;--card-icon-color:#D97706;--card-color:rgba(217,119,6,.1)">
-      <div class="stat-card-icon" style="background:#FEF3C7"><i class="fas fa-clock" style="color:#D97706"></i></div>
-      <div class="stat-card-value">{{ stats.pending|default:0 }}</div>
-      <div class="stat-card-label">Pending Review</div>
-    </div>
+    <a href="{% url 'dashboard:my_blogs' %}?status=pending" class="stat-card-link" title="View pending posts">
+      <div class="stat-card" style="--card-bg:#FEF3C7;--card-icon-color:#D97706;--card-color:rgba(217,119,6,.1)">
+        <div class="stat-card-icon" style="background:#FEF3C7"><i class="fas fa-clock" style="color:#D97706"></i></div>
+        <div class="stat-card-value">{{ stats.pending|default:0 }}</div>
+        <div class="stat-card-label">Pending Review</div>
+      </div>
+    </a>
   </div>
 </div>
 

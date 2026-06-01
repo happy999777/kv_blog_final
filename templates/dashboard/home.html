@@ -10,32 +10,40 @@
 <!-- Stats Cards -->
 <div class="row g-4 mb-4">
   <div class="col-xl-3 col-md-6">
-    <div class="stat-card" style="--card-bg:#EFF6FF;--card-icon-color:#3B82F6;--card-color:rgba(59,130,246,.1)">
-      <div class="stat-card-icon"><i class="fas fa-users"></i></div>
-      <div class="stat-card-value">{{ stats.total_users|default:0|intcomma }}</div>
-      <div class="stat-card-label">Total Users</div>
-    </div>
+    <a href="{% url 'dashboard:admin_users' %}" class="stat-card-link" title="View user management">
+      <div class="stat-card" style="--card-bg:#EFF6FF;--card-icon-color:#3B82F6;--card-color:rgba(59,130,246,.1)">
+        <div class="stat-card-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-card-value">{{ stats.total_users|default:0|intcomma }}</div>
+        <div class="stat-card-label">Total Users</div>
+      </div>
+    </a>
   </div>
   <div class="col-xl-3 col-md-6">
-    <div class="stat-card" style="--card-bg:#FFF0EB;--card-icon-color:#FF6B35;--card-color:rgba(255,107,53,.1)">
-      <div class="stat-card-icon"><i class="fas fa-newspaper"></i></div>
-      <div class="stat-card-value">{{ stats.total_blogs|default:0|intcomma }}</div>
-      <div class="stat-card-label">Total Blogs</div>
-    </div>
+    <a href="{% url 'dashboard:admin_blogs' %}?status=all" class="stat-card-link" title="View all blogs">
+      <div class="stat-card" style="--card-bg:#FFF0EB;--card-icon-color:#FF6B35;--card-color:rgba(255,107,53,.1)">
+        <div class="stat-card-icon"><i class="fas fa-newspaper"></i></div>
+        <div class="stat-card-value">{{ stats.total_blogs|default:0|intcomma }}</div>
+        <div class="stat-card-label">Total Blogs</div>
+      </div>
+    </a>
   </div>
   <div class="col-xl-3 col-md-6">
-    <div class="stat-card" style="--card-bg:#FEF3C7;--card-icon-color:#D97706;--card-color:rgba(217,119,6,.1)">
-      <div class="stat-card-icon"><i class="fas fa-clock"></i></div>
-      <div class="stat-card-value">{{ stats.pending_blogs|default:0 }}</div>
-      <div class="stat-card-label">Pending Approval</div>
-    </div>
+    <a href="{% url 'dashboard:admin_blogs' %}?status=pending" class="stat-card-link" title="View pending approval blogs">
+      <div class="stat-card" style="--card-bg:#FEF3C7;--card-icon-color:#D97706;--card-color:rgba(217,119,6,.1)">
+        <div class="stat-card-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-card-value">{{ stats.pending_blogs|default:0 }}</div>
+        <div class="stat-card-label">Pending Approval</div>
+      </div>
+    </a>
   </div>
   <div class="col-xl-3 col-md-6">
-    <div class="stat-card" style="--card-bg:#F0FDF4;--card-icon-color:#22C55E;--card-color:rgba(34,197,94,.1)">
-      <div class="stat-card-icon"><i class="fas fa-check-circle"></i></div>
-      <div class="stat-card-value">{{ stats.approved_blogs|default:0|intcomma }}</div>
-      <div class="stat-card-label">Published Posts</div>
-    </div>
+    <a href="{% url 'dashboard:admin_blogs' %}?status=published" class="stat-card-link" title="View published blogs">
+      <div class="stat-card" style="--card-bg:#F0FDF4;--card-icon-color:#22C55E;--card-color:rgba(34,197,94,.1)">
+        <div class="stat-card-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-card-value">{{ stats.approved_blogs|default:0|intcomma }}</div>
+        <div class="stat-card-label">Published Posts</div>
+      </div>
+    </a>
   </div>
 </div>
 
@@ -58,22 +66,28 @@
       <h3 class="dashboard-card-title mb-3">Blog Status Distribution</h3>
       <div class="row text-center">
         <div class="col-4">
-          <div class="border rounded p-2">
-            <h4 class="mb-0 text-success">{{ stats.approved_blogs|default:0 }}</h4>
-            <small>Published</small>
-          </div>
+          <a href="{% url 'dashboard:admin_blogs' %}?status=published" class="status-box-link" title="View published blogs">
+            <div class="border rounded p-2">
+              <h4 class="mb-0 text-success">{{ stats.approved_blogs|default:0 }}</h4>
+              <small>Published</small>
+            </div>
+          </a>
         </div>
         <div class="col-4">
-          <div class="border rounded p-2">
-            <h4 class="mb-0 text-warning">{{ stats.pending_blogs|default:0 }}</h4>
-            <small>Pending</small>
-          </div>
+          <a href="{% url 'dashboard:admin_blogs' %}?status=pending" class="status-box-link" title="View pending blogs">
+            <div class="border rounded p-2">
+              <h4 class="mb-0 text-warning">{{ stats.pending_blogs|default:0 }}</h4>
+              <small>Pending</small>
+            </div>
+          </a>
         </div>
         <div class="col-4">
-          <div class="border rounded p-2">
-            <h4 class="mb-0 text-danger">{{ stats.rejected_blogs|default:0 }}</h4>
-            <small>Rejected</small>
-          </div>
+          <a href="{% url 'dashboard:admin_blogs' %}?status=rejected" class="status-box-link" title="View rejected blogs">
+            <div class="border rounded p-2">
+              <h4 class="mb-0 text-danger">{{ stats.rejected_blogs|default:0 }}</h4>
+              <small>Rejected</small>
+            </div>
+          </a>
         </div>
       </div>
     </div>
@@ -200,8 +214,10 @@
     if (window._adminChartDone) return;
     window._adminChartDone = true;
 
-    const labels = {{ chart_labels|safe }};
-    const values = {{ chart_values|safe }};
+    const chartData = {{ chart_data|safe }};
+    const labels = chartData.labels || [];
+    const blogValues = chartData.blogs || [];
+    const userValues = chartData.users || [];
 
     const ctx = document.getElementById('adminChart');
     if (ctx && typeof Chart !== 'undefined') {
@@ -212,20 +228,38 @@
                 labels: labels,
                 datasets: [{
                     label: 'Blogs',
-                    data: values,
+                    data: blogValues,
                     borderColor: '#FF6B35',
-                    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                    backgroundColor: 'rgba(255, 107, 53, 0.12)',
                     tension: 0.4,
-                    fill: true
+                    fill: true,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }, {
+                    label: 'Users',
+                    data: userValues,
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
-                    x: { grid: { display: false } }
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
                 }
             }
         });
