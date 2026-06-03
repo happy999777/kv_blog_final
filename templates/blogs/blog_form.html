@@ -93,9 +93,17 @@
     border-radius: var(--radius-lg);
     padding: 1.5rem;
 }
-.sticky-publish {
+.sidebar-sticky-wrapper {
     position: sticky;
     top: 90px;
+    align-self: flex-start;
+}
+
+@media (max-width: 991px) {
+    .sidebar-sticky-wrapper {
+        position: static;
+        top: auto;
+    }
 }
 .publish-title {
     font-size: 1rem;
@@ -284,10 +292,10 @@
 
                 <!-- Sidebar Settings -->
                 <div class="col-lg-4">
-
-                    <!-- Publish Actions -->
-                    <div class="publish-box sticky-publish" data-aos="fade-left">
-                        <h5 class="publish-title"><i class="fas fa-paper-plane me-2"></i>Publish</h5>
+                    <div class="sidebar-sticky-wrapper">
+                        <!-- Publish Actions -->
+                        <div class="publish-box" data-aos="fade-left">
+                            <h5 class="publish-title"><i class="fas fa-paper-plane me-2"></i>Publish</h5>
                         <div class="publish-info">
                             <div class="publish-info-row">
                                 <span><i class="fas fa-shield-alt me-2"></i>Status</span>
@@ -311,9 +319,9 @@
                             </button>
                             {% endif %}
                         </div>
-                    </div>
+                        </div>
 
-<!-- Featured Image -->
+                        <!-- Featured Image -->
                      <div class="sidebar-form-widget mt-4" data-aos="fade-left" data-aos-delay="100">
                          <h5 class="widget-title-form"><i class="fas fa-image me-2"></i>Featured Image</h5>
                          <div class="image-upload-area" id="imageUploadArea" style="cursor:pointer">
@@ -352,14 +360,15 @@
                         <small class="text-muted">Separate with commas</small>
                     </div>
 
-                    <!-- Options -->
-                    <div class="sidebar-form-widget mt-4" data-aos="fade-left" data-aos-delay="250">
+                        <!-- Options -->
+                        <div class="sidebar-form-widget mt-4" data-aos="fade-left" data-aos-delay="250">
                         <h5 class="widget-title-form"><i class="fas fa-cog me-2"></i>Options</h5>
                         <div class="form-check custom-check">
                             {{ form.allow_comments }}
                             <label class="form-check-label" for="{{ form.allow_comments.id_for_label }}">
                                 Allow Comments
                             </label>
+                        </div>
                         </div>
                     </div>
 
